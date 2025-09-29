@@ -1,0 +1,68 @@
+﻿@model List<EFCoreCommerceAnalytics.Entities.Customer>
+
+@{
+    ViewData["Title"] = "Bakiyesi 1000'den Fazla Olan Müşteriler";
+    Layout = "~/Views/_Layout/Index.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Bakiyesi 1000'den Fazla Olan Müşteriler</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Müşteri ID</th>
+                                <th>Adı</th>
+                                <th>Soyadı</th>
+                                <th>Şehir</th>
+                                <th>İlçe</th>
+                                <th>Bakiye</th>
+                                <th>Resim</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model)
+                            {
+                                <tr>
+                                    <td>@c.CustomerId</td>
+                                    <td>@c.CustomerFirstName</td>
+                                    <td>@c.CustomerLastName</td>
+                                    <td>@c.CustomerCity</td>
+                                    <td>@c.CustomerDistrict</td>
+                                    <td>@c.CustomerBalance.ToString("C")</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(c.CustomerImageUrl))
+                                        {
+                                            <img src="@c.CustomerImageUrl" style="width:50px;height:50px;object-fit:cover;" />
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href='/Customer/DeleteCustomer/@c.CustomerId' class='btn btn-outline-danger btn-sm'>Sil</a>
+                                        <a href='/Customer/UpdateCustomer/@c.CustomerId' class='btn btn-outline-success btn-sm'>Güncelle</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("HighBalanceCustomers", "Customer", new { page = i })">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+
+            </div>
+        </div>
+    </div>
+</div>

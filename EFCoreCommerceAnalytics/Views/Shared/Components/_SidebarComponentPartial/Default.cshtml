@@ -1,0 +1,166 @@
+﻿<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+
+        <!-- Profil -->
+        <li class="nav-item nav-profile">
+            <div class="nav-link">
+                <div class="profile-image">
+                    <img src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/images/faces/face5.jpg" alt="image" />
+                </div>
+                <div class="profile-name">
+                    <p class="name">Hoşgeldin Kürşat!</p>
+                    <p class="designation">Admin</p>
+                </div>
+            </div>
+        </li>
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a class="nav-link" href="/Dashboard/Index">
+                <i class="fa fa-home menu-icon"></i>
+                <span class="menu-title">Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Müşteriler -->
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#customerMenu" role="button" aria-expanded="false" aria-controls="customerMenu">
+                <i class="fa fa-users menu-icon"></i>
+                <span class="menu-title">Müşteriler</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="customerMenu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Customer/CustomerList"><i class="fa fa-list"></i> Tüm Müşteriler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Customer/TopCitiesWithTopCustomers"><i class="fa fa-chart-line"></i> En Çok Sipariş Alan Şehirler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Customer/CustomersNormalBalance"><i class="fa fa-chart-line"></i> Yüksek Bakiyeli Müşteriler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("TopCitiesWithTopCustomers", "Customer")">
+                            <i class="fa fa-map-marker-alt"></i> Şehirlere Göre Müşteriler
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </li>
+
+
+        <!-- İstatistikler -->
+        <li class="nav-item">
+            <a class="nav-link" href="/Dashboard/Statistics">
+                <i class="fa fa-chart-pie menu-icon"></i>
+                <span class="menu-title">İstatistikler</span>
+            </a>
+        </li>
+
+        <!-- Siparişler collapse -->
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#ordersMenu" role="button" aria-expanded="false" aria-controls="ordersMenu">
+                <i class="fa fa-shopping-cart menu-icon"></i>
+                <span class="menu-title">Siparişler</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="ordersMenu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Order/OrderList"><i class="fa fa-list"></i> Tüm Siparişler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Order/CanceledOrders"><i class="fa fa-times-circle"></i> İptal Edilen Siparişler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Order/DeliveredAndActiveOrders"><i class="fa fa-box"></i>Aktif Siparişler</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+
+        <!-- Kategoriler -->
+        <li class="nav-item">
+            <a class="nav-link" href="/Category/CategoryList">
+                <i class="fa fa-tags menu-icon"></i>
+                <span class="menu-title">Kategoriler</span>
+            </a>
+        </li>
+
+        <!-- ToDo Menüsü -->
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#todoMenu" role="button" aria-expanded="false" aria-controls="todoMenu">
+                <i class="fa fa-tasks menu-icon"></i>
+                <span class="menu-title">Görevler (ToDo)</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="todoMenu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ToDo/CreateSingleTodo"><i class="fa fa-plus"></i> Tek Görev Ekle</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ToDo/CreateToDo"><i class="fa fa-plus-circle"></i> Yeni Görev Ekle (Range)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ToDo/ShowPriortyNumberOne"><i class="fa fa-star"></i> Birincil Görevler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ToDo/ShowPrimaryAndSecondaryTodos">
+                            <i class="fa fa-plus"></i>
+                            <span class="menu-title">Birincil + İkincil Görevler</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ToDo/ShowFourthAndFifthUnion"><i class="fa fa-layer-group"></i> 4. ve 5. Öncelik</a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+
+
+
+        <!-- Diğer menüler -->
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#uiElements" role="button" aria-expanded="false" aria-controls="uiElements">
+                <i class="fa fa-cubes menu-icon"></i>
+                <span class="menu-title">UI Elements</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="uiElements">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"><a class="nav-link" href="pages/ui-features/buttons.html">Buttons</a></li>
+                    <li class="nav-item"><a class="nav-link" href="pages/ui-features/typography.html">Typography</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#forms" role="button" aria-expanded="false" aria-controls="forms">
+                <i class="fa fa-edit menu-icon"></i>
+                <span class="menu-title">Forms</span>
+                <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="forms">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"><a class="nav-link" href="pages/forms/basic_elements.html">Basic Elements</a></li>
+                    <li class="nav-item"><a class="nav-link" href="pages/forms/advanced_elements.html">Advanced Elements</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="pages/documentation.html">
+                <i class="fa fa-book menu-icon"></i>
+                <span class="menu-title">Documentation</span>
+            </a>
+        </li>
+
+    </ul>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,0 +1,64 @@
+﻿@model List<EFCoreCommerceAnalytics.Entities.Order>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Teslim Edildi ve İptal Olmayan Siparişler";
+    Layout = "~/Views/_Layout/Index.cshtml";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Aktif Olan Siparişler</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Ürün</th>
+                                <th>Müşteri</th>
+                                <th>Adet</th>
+                                <th>Birim Fiyat</th>
+                                <th>Toplam Fiyat</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model)
+                            {
+                                <tr>
+                                    <td>@o.OrderId</td>
+                                    <td>@o.Product?.ProductName</td>
+                                    <td>@o.Customer?.CustomerFirstName @o.Customer?.CustomerLastName</td>
+                                    <td>@o.OrderCount</td>
+                                    <td>@o.UnitPrice.ToString("C", CultureInfo.CreateSpecificCulture("tr-TR"))</td>
+                                    <td>@o.TotalPrice.ToString("C", CultureInfo.CreateSpecificCulture("tr-TR"))</td>
+                                    <td>@o.OrderDate.ToString("dd.MM.yyyy")</td>
+                                    <td>@o.SaleStatus</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("DeliveredAndActiveOrders", "Order", new { page = i })">@i</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+
+            </div>
+        </div>
+    </div>
+</div>

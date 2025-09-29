@@ -1,0 +1,81 @@
+﻿@model Customer
+@{
+    ViewData["Title"] = "UpdateCustomer";
+    Layout = "~/Views/_Layout/Index.cshtml";
+}
+
+<div class="row">
+    <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Müşteri Güncelleme</h4>
+                <form method="post" enctype="multipart/form-data" class="forms-sample">
+                    <input type="hidden" asp-for="CustomerId" />
+
+                    <div class="form-group">
+                        <label for="firstName">Adı</label>
+                        <input type="text"
+                               class="form-control"
+                               id="firstName"
+                               required
+                               placeholder="Adı Giriniz"
+                               asp-for="CustomerFirstName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Soyadı</label>
+                        <input type="text"
+                               class="form-control"
+                               id="lastName"
+                               required
+                               placeholder="Soyadı Giriniz"
+                               asp-for="CustomerLastName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">Şehir</label>
+                        <input type="text"
+                               class="form-control"
+                               id="city"
+                               placeholder="Şehir Giriniz"
+                               asp-for="CustomerCity" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="district">İlçe</label>
+                        <input type="text"
+                               class="form-control"
+                               id="district"
+                               placeholder="İlçe Giriniz"
+                               asp-for="CustomerDistrict" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="balance">Bakiye</label>
+                        <input type="number"
+                               class="form-control"
+                               id="balance"
+                               step="0.01"
+                               placeholder="Bakiye Giriniz"
+                               asp-for="CustomerBalance" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="image">Resim</label>
+                        <input type="file"
+                               class="form-control"
+                               id="image"
+                               asp-for="CustomerImageUrl" />
+                        @if (!string.IsNullOrEmpty(Model.CustomerImageUrl))
+                        {
+                            <img src="@Model.CustomerImageUrl" alt="Customer Image" style="width:100px;height:100px;margin-top:10px;object-fit:cover;" />
+                        }
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mr-2">Güncelle</button>
+                    <a href="/Customer/CustomerList" class="btn btn-light">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+﻿@model List<EFCoreCommerceAnalytics.Entities.ToDo>
+@{
+    ViewData["Title"] = "Birincil + İkincil Görevler";
+    Layout = "~/Views/_Layout/Index.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Birincil + İkincil Görevler</h4>
+                <p class="card-description">
+                    Toplam Görev: <strong>@ViewBag.TotalCount</strong>
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Açıklama</th>
+                                <th>Durum</th>
+                                <th>Öncelik</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.TodoId</td>
+                                    <td>@item.ToDoDescription</td>
+                                    <td>
+                                        @if (item.ToDoStatus)
+                                        {
+                                            <span class="badge badge-success">Tamamlandı</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">Tamamlanmadı</span>
+                                        }
+                                    </td>
+                                    <td>@item.Priority</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

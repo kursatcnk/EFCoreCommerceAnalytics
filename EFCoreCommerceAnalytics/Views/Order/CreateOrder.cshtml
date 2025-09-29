@@ -1,0 +1,164 @@
+﻿@model EFCoreCommerceAnalytics.Entities.Order
+@{
+    ViewData["Title"] = "CreateOrder";
+    Layout = "~/Views/_Layout/Index.cshtml";
+}
+
+<div class="row">
+    <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Sipariş Oluştur</h4>
+                <form method="post" class="forms-sample">
+
+                    <!-- CUSTOMER -->
+                    <div class="form-group">
+                        <label for="customer">Müşteri</label>
+                        <div class="input-group">
+                            <select class="form-control" id="customer" asp-for="CustomerId">
+                                <option value="">Seçiniz</option>
+                                @foreach (var c in ViewBag.Customers)
+                                {
+                                    <option value="@c.CustomerId">@c.CustomerFirstName @c.CustomerLastName</option>
+                                }
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" id="customerSearchBtn">V</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRODUCT -->
+                    <div class="form-group">
+                        <label for="product">Ürün</label>
+                        <div class="input-group">
+                            <select class="form-control" id="product" asp-for="ProductId">
+                                <option value="">Seçiniz</option>
+                                @foreach (var p in ViewBag.Products)
+                                {
+                                    <option value="@p.ProductId" data-price="@p.ProductPrice">@p.ProductName</option>
+                                }
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" id="productSearchBtn">V</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ORDER COUNT -->
+                    <div class="form-group">
+                        <label for="orderCount">Adet</label>
+                        <input type="number" class="form-control" id="orderCount" placeholder="Adet Giriniz" required asp-for="OrderCount" min="1" />
+                    </div>
+
+                    <!-- UNIT PRICE -->
+                    <div class="form-group">
+                        <label for="unitPrice">Birim Fiyat</label>
+                        <input type="number" class="form-control" id="unitPrice" readonly asp-for="UnitPrice" />
+                    </div>
+
+                    <!-- TOTAL PRICE -->
+                    <div class="form-group">
+                        <label for="totalPrice">Toplam Fiyat</label>
+                        <input type="number" class="form-control" id="totalPrice" readonly asp-for="TotalPrice" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mr-2">Ekle</button>
+                    <a href="/Order/OrderList" class="btn btn-light">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CUSTOMER MODAL -->
+<div class="modal fade" id="customerModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content p-3">
+            <h5>Müşteri Ara</h5>
+            <input type="text" id="customerSearch" class="form-control mb-2" placeholder="Ad veya Soyad">
+            <ul id="customerResults" class="list-group"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal fade" id="productModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content p-3">
+            <h5>Ürün Ara</h5>
+            <input type="text" id="productSearch" class="form-control mb-2" placeholder="Ürün adı">
+            <ul id="productResults" class="list-group"></ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+
+        function updateTotalPrice(){
+            let unit = parseFloat($("#unitPrice").val()) || 0;
+            let count = parseInt($("#orderCount").val()) || 0;
+            $("#totalPrice").val((unit * count).toFixed(2));
+        }
+
+        $("#orderCount").on("input", updateTotalPrice);
+
+        $("#product").on("change", function(){
+            let selectedPrice = parseFloat($("#product option:selected").data("price")) || 0;
+            $("#unitPrice").val(selectedPrice);
+            updateTotalPrice();
+        });
+
+        // --- CUSTOMER MODAL ---
+        $("#customerSearchBtn").click(function(){
+            $("#customerModal").modal('show');
+            $("#customerSearch").val('');
+            $("#customerResults").empty();
+        });
+
+        $("#customerSearch").on("input", function(){
+            let term = $(this).val();
+            $.getJSON('/Order/SearchCustomers?term=' + term, function(data){
+                $("#customerResults").empty();
+                data.forEach(c => {
+                    $("#customerResults").append(`<li class="list-group-item list-group-item-action" data-id="${c.customerId}">${c.customerFirstName} ${c.customerLastName}</li>`);
+                });
+            });
+        });
+
+        $("#customerResults").on("click", "li", function(){
+            let id = $(this).data("id");
+            $("#customer").val(id);
+            $("#customerModal").modal('hide');
+        });
+
+        // --- PRODUCT MODAL ---
+        $("#productSearchBtn").click(function(){
+            $("#productModal").modal('show');
+            $("#productSearch").val('');
+            $("#productResults").empty();
+        });
+
+        $("#productSearch").on("input", function(){
+            let term = $(this).val();
+            $.getJSON('/Order/SearchProducts?term=' + term, function(data){
+                $("#productResults").empty();
+                data.forEach(p => {
+                    $("#productResults").append(`<li class="list-group-item list-group-item-action" data-id="${p.productId}" data-price="${p.productPrice}">${p.productName} - ${p.productPrice}</li>`);
+                });
+            });
+        });
+
+        $("#productResults").on("click", "li", function(){
+            let id = $(this).data("id");
+            let price = $(this).data("price");
+            $("#product").val(id);
+            $("#unitPrice").val(price);
+            updateTotalPrice();
+            $("#productModal").modal('hide');
+        });
+
+    });
+</script>

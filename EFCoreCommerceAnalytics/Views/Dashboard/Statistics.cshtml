@@ -1,0 +1,36 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+  @* //Burada head kısmı için yaptığım partialviewın componentini invoke edip çağırıyorum. *@
+@await Component.InvokeAsync("_HeadComponentPartial")
+<body>
+    <div>
+        class="container-scroller">
+        @*  //Navbar componentini çağırıyorum burada *@
+        @await Component.InvokeAsync("_NavbarComponentPartial")
+        <!-- partial -->
+        <div class="container-fluid page-body-wrapper">
+            @* //Tema rengi değiştirme kısmının partialviewını burada çağırıyorum. *@
+            @await Component.InvokeAsync("_ThemeSettingsPartial")
+            @*       //Sağ taraftaki sidebarın partialviewını burada çağırıyorum. *@
+            @await Component.InvokeAsync("_RightSidebarPartial")
+            @await Component.InvokeAsync("_SidebarComponentPartial")
+            @await Component.InvokeAsync("_StastisticWidgetComponentPartial")
+        </div>
+    </div>
+
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/vendors/js/vendor.bundle.base.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/vendors/js/vendor.bundle.addons.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/js/off-canvas.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/js/hoverable-collapse.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/js/misc.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/js/settings.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/js/todolist.js"></script>
+    <script src="/Melody-Premium-Bootstrap-Admin-Dashboard-Template/js/dashboard.js"></script>
+
+</body>
+
+
+</html>

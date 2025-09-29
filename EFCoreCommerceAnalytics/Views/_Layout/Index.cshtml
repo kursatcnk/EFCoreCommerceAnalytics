@@ -1,0 +1,34 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+  @* //Burada head kısmı için yaptığım partialviewın componentini invoke edip çağırıyorum. *@
+@await Component.InvokeAsync("_HeadComponentPartial")
+<body>
+    <div class="container-scroller">
+        @*  //Navbar componentini çağırıyorum burada *@
+        @await Component.InvokeAsync("_NavbarComponentPartial")
+        <!-- partial -->
+        <div class="container-fluid page-body-wrapper">
+            @* //Tema rengi değiştirme kısmının partialviewını burada çağırıyorum. *@
+            @await Component.InvokeAsync("_ThemeSettingsPartial")
+            @*       //Sağ taraftaki sidebarın partialviewını burada çağırıyorum. *@
+            @await Component.InvokeAsync("_RightSidebarPartial")
+            @await Component.InvokeAsync("_SidebarComponentPartial")
+            <div class="main-panel">
+                <div class="content-wrapper">
+
+                    @RenderBody()
+                </div>
+                @await Component.InvokeAsync("_LayoutFooterComponentPartial")
+            </div>
+        </div>
+    </div>
+
+    @await Component.InvokeAsync("_LayoutScriptsComponentPartial")
+
+</body>
+
+
+</html>
