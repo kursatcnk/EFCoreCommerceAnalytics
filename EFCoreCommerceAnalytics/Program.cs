@@ -1,5 +1,6 @@
 using EFCoreCommerceAnalytics.Context;
 using EFCoreCommerceAnalytics.Data;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IToDoService, ToDoService>();
+builder.Services.AddScoped<IInboxService, InboxService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 var app = builder.Build();
 

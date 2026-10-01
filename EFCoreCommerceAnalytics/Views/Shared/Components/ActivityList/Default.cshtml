@@ -1,0 +1,25 @@
+@model IReadOnlyList<Activity>
+<div class="card h-100">
+    <div class="card-body">
+        <h4 class="card-title"><i class="fas fa-stream"></i> Aktiviteler</h4>
+        @if (Model.Count == 0)
+        {
+            <p class="text-muted mb-0">Henüz aktivite yok.</p>
+        }
+        else
+        {
+            <ul class="solid-bullet-list">
+                @foreach (var item in Model)
+                {
+                    <li>
+                        <h5>
+                            @item.ActivityTitle
+                            <span class="float-right text-muted font-weight-normal small">@item.ActivityTime.ToString("HH:mm")</span>
+                        </h5>
+                        <p class="text-muted">@item.ActivityDescription</p>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

@@ -6,7 +6,7 @@
         </li>    
     </ul>
     <div class="tab-content" id="setting-content">
-        @await Component.InvokeAsync("_RightSidebarTodoListComponentPartial")
+        @await Component.InvokeAsync("LatestToDos", new { take = 5, view = "Sidebar" })
         <!-- To do section tab ends -->
 
         <!-- chat tab ends -->

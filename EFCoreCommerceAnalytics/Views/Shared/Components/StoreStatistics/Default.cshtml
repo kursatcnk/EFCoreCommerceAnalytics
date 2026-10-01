@@ -1,0 +1,37 @@
+@using EFCoreCommerceAnalytics.Models
+@model StoreStatistics
+@{
+    string Money(decimal? value) => value?.ToString("C") ?? "-";
+
+    var cards = new List<StatCardModel>
+    {
+        new("Kategori sayısı", Model.CategoryCount.ToString("N0"), $"{Model.TotalOrderCount:N0} siparişte bu kategorilerden ürün satıldı.", "fas fa-layer-group text-info"),
+        new("Bugünkü siparişler", Model.TodaysOrderCount.ToString("N0"), $"{Model.ProductCount:N0} ürün arasından bugün verilen siparişler.", "fas fa-shopping-cart text-danger"),
+        new("En popüler ürün", Model.MostPopularProduct ?? "-", $"Toplam {Model.MostPopularProductQuantity:N0} adet satıldı (iptaller hariç).", "fas fa-star text-warning"),
+        new("Depodaki toplam stok", Model.TotalStock.ToString("N0"), $"Bugüne kadar {Model.TotalOrderedQuantity:N0} adet ürün satıldı.", "fas fa-warehouse text-info"),
+        new("En pahalı ürün fiyatı", Money(Model.MostExpensivePrice), $"En ucuz ürün: {Money(Model.CheapestPrice)}", "fas fa-tag text-success"),
+        new("Ortalama ürün fiyatı", Money(Model.AverageProductPrice), $"{Model.ProductsBelowPriceCount:N0} ürün {Model.PriceThreshold:C0} altında.", "fas fa-balance-scale text-primary"),
+        new("En çok ciro yapan kategori", Model.TopRevenueCategory ?? "-", $"Bu kategoriden {Model.TopRevenueCategoryQuantity:N0} adet ürün satıldı.", "fas fa-trophy text-warning"),
+        new("En yüksek stok", Model.HighestStock?.ProductName ?? "-", Model.HighestStock is null ? "" : $"Stokta {Model.HighestStock.Stock:N0} adet var.", "fas fa-boxes text-success"),
+        new("En düşük stok", Model.LowestStock?.ProductName ?? "-", Model.LowestStock is null ? "" : $"Stokta yalnızca {Model.LowestStock.Stock:N0} adet kaldı.", "fas fa-exclamation-triangle text-danger")
+    };
+}
+<div class="row">
+    @foreach (var card in cards)
+    {
+        <div class="col-md-6 col-xl-4 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-0">@card.Title</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="pt-3">
+                            <h2 class="mb-1 stat-value">@card.Value</h2>
+                            <small class="text-muted">@card.Note</small>
+                        </div>
+                        <i class="@card.Icon icon-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,10 @@
+@model EFCoreCommerceAnalytics.Models.AvatarModel
+@* Resim varsa resmi, yoksa ismin baş harfini gösteren küçük yuvarlak. *@
+@if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+{
+    <img src="@Model.ImageUrl" alt="@Model.Name" class="img-sm rounded-circle" loading="lazy" />
+}
+else
+{
+    <span class="avatar-initial img-sm rounded-circle" aria-hidden="true">@Model.Initial</span>
+}

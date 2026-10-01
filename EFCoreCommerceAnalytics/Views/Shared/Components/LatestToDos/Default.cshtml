@@ -1,0 +1,29 @@
+@model IReadOnlyList<ToDo>
+@* Dashboard'daki "Yapılacaklar" kartı. Şablondan gelen ama hiçbir şey kaydetmeyen ekleme kutusu kaldırıldı;
+   görev ekleme ilgili sayfadan yapılıyor. *@
+<div class="card h-100">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title mb-0"><i class="fas fa-thumbtack"></i> Son görevler</h4>
+            <a asp-controller="ToDo" asp-action="CreateSingleTodo" class="btn btn-sm btn-primary">Görev ekle</a>
+        </div>
+        @if (Model.Count == 0)
+        {
+            <p class="text-muted mb-0">Henüz görev yok.</p>
+        }
+        else
+        {
+            <ul class="list-unstyled mb-0">
+                @foreach (var item in Model)
+                {
+                    <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="@(item.ToDoStatus ? "text-muted text-strike" : "")">
+                            <i class="far @(item.ToDoStatus ? "fa-check-square text-success" : "fa-square") mr-2"></i>@item.ToDoDescription
+                        </span>
+                        <span class="badge badge-light">@item.Priority</span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

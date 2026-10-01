@@ -1,142 +1,33 @@
-﻿
 @{
-    Layout = null;
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/_Layout/Index.cshtml";
 }
-<!DOCTYPE html>
-<html lang="tr">
-  @* //Burada head kısmı için yaptığım partialviewın componentini invoke edip çağırıyorum. *@
-@await Component.InvokeAsync("_HeadComponentPartial")
-<body>
-    <div class="container-scroller">
-       @*  //Navbar componentini çağırıyorum burada *@
-        @await Component.InvokeAsync("_NavbarComponentPartial")
-        <!-- partial -->
-        <div class="container-fluid page-body-wrapper">
-            @* //Tema rengi değiştirme kısmının partialviewını burada çağırıyorum. *@
-            @await Component.InvokeAsync("_ThemeSettingsPartial")
-            @*       //Sağ taraftaki sidebarın partialviewını burada çağırıyorum. *@
-            @await Component.InvokeAsync("_RightSidebarPartial")  
-            @await Component.InvokeAsync("_SidebarComponentPartial")  
-            <div class="main-panel">
-                <div class="content-wrapper">
-                    <div class="page-header">
-                        <h3 class="page-title">
-                            Dashboard
-                        </h3>
-                    </div>
-                    <div class="row grid-margin">
-                        <div class="col-12">
-                            @await Component.InvokeAsync("_StatisticsComponentPartial")
-                        </div>
-                    </div>
-                    @await Component.InvokeAsync("_ChartComponentPartial")
-                    <div class="row">
-                        @await Component.InvokeAsync("_SalesStatusComponentPartial")
-                        @await Component.InvokeAsync("_ActivityComponentPartial")
-                        @await Component.InvokeAsync("_DailySalesComponentPartial")
-                     
-                    </div>
-                    @await Component.InvokeAsync("_EmailsComponentPartial")
-                    <div class="row">
-                        @await Component.InvokeAsync("_SalesDataComponentPartial")
-                        @* Takvimi viewcomponent olarak getirme gereği duymadım, kalabilir. *@
-                        <div class="col-md-4 grid-margin stretch-card">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        Takvim
-                                    </h4>
-                                    <div id="inline-datepicker-example" class="datepicker"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        @await Component.InvokeAsync("_ToDoComponentPartial")
-                        <div class="col-md-5 grid-margin stretch-card">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">
-                                        <i class="fas fa-rocket"></i>
-                                        Projects
-                                    </h4>
-                                    <div class="table-responsive">
-                                        <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        Assigned to
-                                                    </th>
-                                                    <th>
-                                                        Project name
-                                                    </th>
-                                                    <th>
-                                                        Priority
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="py-1">
-                                                        <img src="images/faces/face1.jpg" alt="profile" class="img-sm rounded-circle" />
-                                                    </td>
-                                                    <td>
-                                                        South Shyanne
-                                                    </td>
-                                                    <td>
-                                                        <label class="badge badge-warning badge-pill">Medium</label>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="py-1">
-                                                        <img src="images/faces/face2.jpg" alt="profile" class="img-sm rounded-circle" />
-                                                    </td>
-                                                    <td>
-                                                        New Trystan
-                                                    </td>
-                                                    <td>
-                                                        <label class="badge badge-danger badge-pill">High</label>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="py-1">
-                                                        <img src="images/faces/face3.jpg" alt="profile" class="img-sm rounded-circle" />
-                                                    </td>
-                                                    <td>
-                                                        East Helga
-                                                    </td>
-                                                    <td>
-                                                        <label class="badge badge-success badge-pill">Low</label>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="py-1">
-                                                        <img src="images/faces/face4.jpg" alt="profile" class="img-sm rounded-circle" />
-                                                    </td>
-                                                    <td>
-                                                        Omerbury
-                                                    </td>
-                                                    <td>
-                                                        <label class="badge badge-warning badge-pill">Medium</label>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-        
-                </div>
+<div class="page-header">
+    <h3 class="page-title">Dashboard</h3>
+</div>
 
-                @await Component.InvokeAsync("_FooterComponentPartial")
-            </div>
-        </div>       
+<div class="row grid-margin">
+    <div class="col-12">
+        @await Component.InvokeAsync("DashboardSummary")
     </div>
+</div>
 
-    @await Component.InvokeAsync("_DashboardScriptsComponentPartial")
+<div class="row">
+    <div class="col-lg-6 grid-margin stretch-card">@await Component.InvokeAsync("OrderStatusChart")</div>
+    <div class="col-lg-6 grid-margin stretch-card">@await Component.InvokeAsync("DailyOrdersChart", new { days = 30 })</div>
+</div>
 
-</body>
-</html>
+<div class="row">
+    <div class="col-lg-4 grid-margin stretch-card">@await Component.InvokeAsync("CustomerCityChart", new { top = 8 })</div>
+    <div class="col-lg-4 grid-margin stretch-card">@await Component.InvokeAsync("ActivityList")</div>
+    <div class="col-lg-4 grid-margin stretch-card">@await Component.InvokeAsync("ToDoPriorityChart")</div>
+</div>
+
+<div class="row">
+    <div class="col-12 grid-margin">@await Component.InvokeAsync("LatestMessages", new { take = 5 })</div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7 grid-margin stretch-card">@await Component.InvokeAsync("LatestOrders", new { take = 5 })</div>
+    <div class="col-lg-5 grid-margin stretch-card">@await Component.InvokeAsync("LatestToDos", new { take = 5 })</div>
+</div>

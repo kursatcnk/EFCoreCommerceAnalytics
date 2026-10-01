@@ -1,0 +1,34 @@
+@model IReadOnlyList<Message>
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title mb-0"><i class="fas fa-envelope"></i> Son mesajlar</h4>
+            <a asp-controller="Message" asp-action="MessageList" class="small">Tümü</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td class="text-center text-muted">Gösterilecek mesaj yok.</td></tr>
+                    }
+                    @foreach (var msg in Model)
+                    {
+                        <tr class="@(msg.IsRead ? "" : "font-weight-bold")">
+                            <td class="py-1" style="width:48px">
+                                <partial name="_Avatar" model="@(new EFCoreCommerceAnalytics.Models.AvatarModel(msg.SenderNameSurname, msg.SenderImageUrl))" />
+                            </td>
+                            <td>@msg.SenderNameSurname</td>
+                            <td><a asp-controller="Message" asp-action="Detail" asp-route-id="@msg.MessageId">@msg.Title</a></td>
+                            <td class="text-muted d-none d-md-table-cell">@(msg.Content.Length > 60 ? msg.Content[..60] + "…" : msg.Content)</td>
+                            <td class="text-nowrap">@msg.DateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge badge-pill @(msg.IsRead ? "badge-success" : "badge-warning")">@(msg.IsRead ? "Okundu" : "Okunmadı")</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

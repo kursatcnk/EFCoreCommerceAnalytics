@@ -1,0 +1,37 @@
+@using EFCoreCommerceAnalytics.Helpers
+@model IReadOnlyList<Order>
+<div class="card h-100">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title mb-0"><i class="fas fa-table"></i> Son 5 sipariş</h4>
+            <a asp-controller="Order" asp-action="OrderList" class="small">Tümü</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Müşteri</th>
+                        <th>Ürün</th>
+                        <th class="text-right">Adet</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="4" class="text-center text-muted">Henüz sipariş yok.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="font-weight-bold">@item.Customer?.FullName</td>
+                            <td class="text-muted">@item.Product?.ProductName</td>
+                            <td class="text-right">@item.OrderCount</td>
+                            <td><label class="@StatusColorHelper.GetBadgeClass(item.SaleStatus)">@item.SaleStatus</label></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,12 @@
+@model IReadOnlyList<ToDo>
+@* Sağ paneldeki görev listesi. Eskiden tamamlanan görevler işaretsiz, tamamlanmayanlar işaretli görünüyordu (koşul terslenmişti). *@
+<div class="list-wrapper px-3">
+    <ul class="list-unstyled todo-list">
+        @foreach (var item in Model)
+        {
+            <li class="@(item.ToDoStatus ? "completed" : "")">
+                <i class="far @(item.ToDoStatus ? "fa-check-square text-success" : "fa-square") mr-2"></i>@item.ToDoDescription
+            </li>
+        }
+    </ul>
+</div>

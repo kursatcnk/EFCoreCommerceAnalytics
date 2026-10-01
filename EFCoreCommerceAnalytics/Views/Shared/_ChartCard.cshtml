@@ -1,0 +1,22 @@
+@using System.Text.Json
+@model EFCoreCommerceAnalytics.Models.ChartCardModel
+@* Grafik kartı: başlık, ikon ve charts.js'in çizeceği canvas. Veri yoksa boş durum mesajı gösterilir. *@
+<div class="card h-100">
+    <div class="card-body">
+        <h4 class="card-title"><i class="@Model.Icon"></i> @Model.Title</h4>
+        @if (Model.Points.Count == 0 || Model.Points.All(p => p.Value == 0))
+        {
+            <p class="text-muted mb-0">Henüz gösterilecek veri yok.</p>
+        }
+        else
+        {
+            <div class="chart-box">
+                <canvas data-chart="@Model.Type"
+                        data-label="@Model.Title"
+                        data-labels="@JsonSerializer.Serialize(Model.Points.Select(p => p.Label))"
+                        data-values="@JsonSerializer.Serialize(Model.Points.Select(p => p.Value))"
+                        aria-label="@Model.Title" role="img"></canvas>
+            </div>
+        }
+    </div>
+</div>

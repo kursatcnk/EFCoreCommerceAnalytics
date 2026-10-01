@@ -1,0 +1,32 @@
+@model EFCoreCommerceAnalytics.Models.DashboardSummary
+@* Sayaç şeridi. Şablondaki "2.7% increase" gibi sabit, uydurma yüzdeler kaldırıldı; yalnızca gerçek değerler gösteriliyor. *@
+<div class="card card-statistics">
+    <div class="card-body">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
+            <div class="statistics-item">
+                <p><i class="icon-sm fa fa-user mr-2"></i> Müşteri</p>
+                <h2>@Model.CustomerCount.ToString("N0")</h2>
+            </div>
+            <div class="statistics-item">
+                <p><i class="icon-sm fas fa-layer-group mr-2"></i> Kategori</p>
+                <h2>@Model.CategoryCount.ToString("N0")</h2>
+            </div>
+            <div class="statistics-item">
+                <p><i class="icon-sm fas fa-box mr-2"></i> Ürün</p>
+                <h2>@Model.ProductCount.ToString("N0")</h2>
+            </div>
+            <div class="statistics-item">
+                <p><i class="icon-sm fas fa-wallet mr-2"></i> Ortalama müşteri bakiyesi</p>
+                <h2>@(Model.AverageCustomerBalance?.ToString("C") ?? "-")</h2>
+            </div>
+            <div class="statistics-item">
+                <p><i class="icon-sm fas fa-chart-line mr-2"></i> Sipariş</p>
+                <h2>@Model.OrderCount.ToString("N0")</h2>
+            </div>
+            <div class="statistics-item">
+                <p><i class="icon-sm fas fa-cubes mr-2"></i> Sipariş edilen ürün adedi</p>
+                <h2>@Model.OrderedItemCount.ToString("N0")</h2>
+            </div>
+        </div>
+    </div>
+</div>
