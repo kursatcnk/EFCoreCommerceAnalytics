@@ -1,13 +1,13 @@
-﻿using EFCoreCommerceAnalytics.Entities;
+using EFCoreCommerceAnalytics.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreCommerceAnalytics.Context
 {
     public class AppDbContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        // Bağlantı ayarları Program.cs içinde appsettings'ten veriliyor; kodda sabit sunucu adı tutulmuyor.
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-            optionsBuilder.UseSqlServer("Server=DESKTOP-SDOQO5O;Initial Catalog=ECommerceAnalyticsDB;Integrated Security=True;TrustServerCertificate=True;");
         }
 
         public DbSet<Category> Categiores { get; set; }
@@ -18,9 +18,5 @@ namespace EFCoreCommerceAnalytics.Context
         public DbSet<ToDo> ToDos { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-
-
-
-
     }
 }
