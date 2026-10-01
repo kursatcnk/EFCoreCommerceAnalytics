@@ -38,7 +38,7 @@ namespace EFCoreCommerceAnalytics.Controllers
         [HttpGet]
         public IActionResult AddProduct()
         {
-            ViewBag.Categories = _context.Categiores
+            ViewBag.Categories = _context.Categories
                                          .Select(c => new SelectListItem
                                          {
                                              Value = c.CategoryId.ToString(),
@@ -77,7 +77,7 @@ namespace EFCoreCommerceAnalytics.Controllers
                 return NotFound();
             }
 
-            ViewBag.Categories = _context.Categiores
+            ViewBag.Categories = _context.Categories
                                          .Select(c => new SelectListItem
                                          {
                                              Value = c.CategoryId.ToString(),

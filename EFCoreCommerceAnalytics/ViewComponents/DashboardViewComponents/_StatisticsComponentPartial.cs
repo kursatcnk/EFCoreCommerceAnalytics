@@ -13,7 +13,7 @@ namespace EFCoreCommerceAnalytics.ViewComponents.DashboardViewComponents
         public IViewComponentResult Invoke()
         {
             ViewBag.TotalCustomerCount = _context.Customers.Count();
-            ViewBag.TotalCategoryCount = _context.Categiores.Count();
+            ViewBag.TotalCategoryCount = _context.Categories.Count();
             ViewBag.TotalProductCount = _context.Products.Count();
             ViewBag.AvarageCustomerBalance = Math.Round(_context.Customers.Average(x => x.CustomerBalance), 2);
             ViewBag.TotalSaleCount= _context.Orders.Count();

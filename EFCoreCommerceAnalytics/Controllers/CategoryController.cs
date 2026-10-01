@@ -17,7 +17,7 @@ namespace EFCoreCommerceAnalytics.Controllers
         public async Task<IActionResult> CategoryList(string search = "", int page = 1)
         {
             int pageSize = 10;
-            var query = _context.Categiores.AsQueryable();
+            var query = _context.Categories.AsQueryable();
 
             // Arama filtresi
             if (!string.IsNullOrWhiteSpace(search))
@@ -64,17 +64,17 @@ namespace EFCoreCommerceAnalytics.Controllers
         public IActionResult CreateCategory(Category category)
         {
             category.Status = true;
-            _context.Categiores.Add(category);
+            _context.Categories.Add(category);
             _context.SaveChanges();
             return RedirectToAction("CategoryList");
         }
 
         public IActionResult DeleteCategory(int id)
         {
-            var category = _context.Categiores.Find(id);
+            var category = _context.Categories.Find(id);
             if (category != null)
             {
-                _context.Categiores.Remove(category);
+                _context.Categories.Remove(category);
                 _context.SaveChanges();
             }
             return RedirectToAction("CategoryList");
@@ -83,7 +83,7 @@ namespace EFCoreCommerceAnalytics.Controllers
         [HttpGet]
         public IActionResult UpdateCategory(int id)
         {
-            var category = _context.Categiores.Find(id);
+            var category = _context.Categories.Find(id);
             if (category == null) return NotFound();
             return View(category);
         }
@@ -91,7 +91,7 @@ namespace EFCoreCommerceAnalytics.Controllers
         [HttpPost]
         public IActionResult UpdateCategory(Category category)
         {
-            var existing = _context.Categiores.Find(category.CategoryId);
+            var existing = _context.Categories.Find(category.CategoryId);
             if (existing == null) return NotFound();
 
             existing.CategoryName = category.CategoryName;

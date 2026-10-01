@@ -1,4 +1,4 @@
-﻿namespace EFCoreCommerceAnalytics.Entities
+namespace EFCoreCommerceAnalytics.Entities
 {
     public class Order
     {
@@ -10,9 +10,10 @@
         public decimal TotalPrice { get; set; }
         public DateTime OrderDate { get; set; }
 
-        public Product Product { get; set; }
-        public Customer Customer { get; set; }
-
+        /// <summary>Değerler <see cref="OrderStatuses"/> içindeki sabitlerden biri.</summary>
         public string? SaleStatus { get; set; }
+
+        public Product? Product { get; set; }
+        public Customer? Customer { get; set; }
     }
 }

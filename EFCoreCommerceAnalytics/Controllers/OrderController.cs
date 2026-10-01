@@ -21,7 +21,7 @@ namespace EFCoreCommerceAnalytics.Controllers
             var query = _context.Orders
                                 .Include(o => o.Customer)
                                 .Include(o => o.Product)
-                                .Where(o => o.SaleStatus != "İptal Edildi") // sadece iptal olmayanlar
+                                .Where(o => o.SaleStatus != OrderStatuses.Cancelled) // sadece iptal olmayanlar
                                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -78,7 +78,7 @@ namespace EFCoreCommerceAnalytics.Controllers
             var query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.Product)
-                .Where(o => o.SaleStatus != "İptal Edildi") // sadece iptal olmayanlar
+                .Where(o => o.SaleStatus != OrderStatuses.Cancelled) // sadece iptal olmayanlar
                 .OrderByDescending(o => o.OrderDate)
                 .AsQueryable();
 
@@ -158,7 +158,7 @@ namespace EFCoreCommerceAnalytics.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order != null)
             {
-                order.SaleStatus = "İptal Edildi";
+                order.SaleStatus = OrderStatuses.Cancelled;
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction("OrderList");
@@ -170,7 +170,7 @@ namespace EFCoreCommerceAnalytics.Controllers
             var canceledOrders = await _context.Orders
                                          .Include(o => o.Customer)
                                          .Include(o => o.Product)
-                                         .Where(o => o.SaleStatus == "İptal Edildi")
+                                         .Where(o => o.SaleStatus == OrderStatuses.Cancelled)
                                          .ToListAsync();
             return View(canceledOrders);
         }

@@ -113,7 +113,7 @@ namespace EFCoreCommerceAnalytics.Controllers
         public async Task<IActionResult> ShowPrimaryTodosInChunks()
         {
             var birincilTodos = await _context.ToDos
-                .Where(t => t.Priority == "Birincil")
+                .Where(t => t.Priority == ToDoPriorities.First)
                 .ToListAsync();
 
             // View'a düz liste gönderiyoruz, view chunk mantığını uygular
@@ -127,7 +127,7 @@ namespace EFCoreCommerceAnalytics.Controllers
         public async Task<IActionResult> ShowPriortyNumberOne()
         {
             var birincilTodos = await _context.ToDos
-                .Where(t => t.Priority == "Birincil")
+                .Where(t => t.Priority == ToDoPriorities.First)
                 .ToListAsync();
 
             var aggregatedDescriptions = birincilTodos.Any()
@@ -145,12 +145,12 @@ namespace EFCoreCommerceAnalytics.Controllers
         {
             // Dördüncül görevler
             var fourthTodos = await _context.ToDos
-                .Where(t => t.Priority == "Dördüncül")
+                .Where(t => t.Priority == ToDoPriorities.Fourth)
                 .ToListAsync();
 
             // Beşincil görevler
             var fifthTodos = await _context.ToDos
-                .Where(t => t.Priority == "Besincil")
+                .Where(t => t.Priority == ToDoPriorities.Fifth)
                 .ToListAsync();
 
             // Union ile birleştiriyoruz
@@ -165,11 +165,11 @@ namespace EFCoreCommerceAnalytics.Controllers
         public async Task<IActionResult> ShowPrimaryAndSecondaryTodos()
         {
             var primaryTodos = await _context.ToDos
-                .Where(t => t.Priority == "Birincil")
+                .Where(t => t.Priority == ToDoPriorities.First)
                 .ToListAsync();
 
             var secondaryTodos = await _context.ToDos
-                .Where(t => t.Priority == "Ikincil")
+                .Where(t => t.Priority == ToDoPriorities.Second)
                 .ToListAsync();
 
             // Concat ile birleştiriyoruz

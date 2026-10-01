@@ -19,7 +19,7 @@ namespace EFCoreCommerceAnalytics.ViewComponents.StatisticsViewComponents
             // VERİLERİ HESAPLADIĞIM YER
             // ===========================
 
-            int categoryCount = _context.Categiores.Count();
+            int categoryCount = _context.Categories.Count();
             decimal mostExpensiveProduct = _context.Products.Max(p => p.ProductPrice);
             decimal mostCheapProduct = _context.Products.Min(p => p.ProductPrice);
             int totalOrderCount = _context.Orders.Count();
@@ -49,7 +49,7 @@ namespace EFCoreCommerceAnalytics.ViewComponents.StatisticsViewComponents
             int totalStockUsedInOrders = _context.Orders.Sum(o => o.OrderCount);
             decimal averageProductPrice = _context.Products.Average(p => p.ProductPrice);
 
-            var topRevenueCategory = _context.Categiores
+            var topRevenueCategory = _context.Categories
                 .Select(c => new
                 {
                     c.CategoryName,
@@ -61,7 +61,7 @@ namespace EFCoreCommerceAnalytics.ViewComponents.StatisticsViewComponents
                 .Select(c => c.CategoryName)
                 .FirstOrDefault();
 
-            int topRevenueCategoryOrders = _context.Categiores
+            int topRevenueCategoryOrders = _context.Categories
                 .Select(c => new
                 {
                     TotalRevenue = c.Products
