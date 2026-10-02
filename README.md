@@ -71,7 +71,7 @@ EFCoreCommerceAnalytics.Tests/   xUnit testleri
 - Formlar entity'lere değil input modellerine bağlanır; formda olmayan alanlar dışarıdan değiştirilemez.
 - Para ve tarih biçimleri tr-TR'dir (₺1.234,50). Number input'lardan gelen noktalı değerler de doğru okunur.
 - Kategori, ürün ya da müşteri silinince siparişler kaskad silinmez (`DeleteBehavior.Restrict`).
-- Arayüz satın alınmış bir Bootstrap 4 admin temasını kullanır; `wwwroot/theme` altında yalnızca kullanılan dosyalar bulunur.
+- Arayüz BootstrapDash'in ücretsiz Melody Admin temasını (Bootstrap 4) kullanır; `wwwroot/theme` altında yalnızca kullanılan dosyalar bulunur.
 
 ## Lisans
 
