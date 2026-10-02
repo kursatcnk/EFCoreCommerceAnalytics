@@ -76,3 +76,6 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
+// Entegrasyon testlerindeki WebApplicationFactory<Program> için.
+public partial class Program { }
