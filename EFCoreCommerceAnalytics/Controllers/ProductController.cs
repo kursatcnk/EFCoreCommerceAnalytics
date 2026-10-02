@@ -1,97 +1,78 @@
-﻿using EFCoreCommerceAnalytics.Context;
-using EFCoreCommerceAnalytics.Entities;
+using EFCoreCommerceAnalytics.Models;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
-    public class ProductController : Controller
+    public class ProductController : AppController
     {
-        private readonly AppDbContext _context;
+        private readonly IProductService _products;
+        private readonly ICategoryService _categories;
 
-        public ProductController(AppDbContext context)
+        public ProductController(IProductService products, ICategoryService categories)
         {
-            _context = context;
+            _products = products;
+            _categories = categories;
         }
 
-        public IActionResult ProductList(int page = 1)
+        public async Task<IActionResult> ProductList(string? search, int page = 1, CancellationToken ct = default)
         {
-            const int pageSize = 10;
-            var totalItems = _context.Products.Count();
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-            var products = _context.Products
-                                   .Include(p => p.Category)
-                                   .OrderBy(p => p.ProductId)
-                                   .Skip((page - 1) * pageSize)
-                                   .Take(pageSize)
-                                   .ToList();
-
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-
-            return View(products);
+            var model = await _products.GetPagedAsync(search, page, ct);
+            return IsAjaxRequest ? PartialView("_ProductRows", model) : View(model);
         }
 
-        // ----------- ADD -----------
         [HttpGet]
-        public IActionResult AddProduct()
+        public async Task<IActionResult> AddProduct(CancellationToken ct) =>
+            View("ProductForm", await FormAsync(new ProductInput(), null, ct));
+
+        [HttpPost]
+        public async Task<IActionResult> AddProduct([Bind(Prefix = "Input")] ProductInput input, CancellationToken ct)
         {
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
-            return View();
+            if (!ModelState.IsValid) return View("ProductForm", await FormAsync(input, null, ct));
+
+            await _products.CreateAsync(input.ToEntity(), ct);
+            FlashSuccess($"\"{input.Name}\" eklendi.");
+            return RedirectToAction(nameof(ProductList));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UpdateProduct(int id, CancellationToken ct)
+        {
+            var product = await _products.GetAsync(id, ct);
+            if (product is null) return NotFound();
+
+            return View("ProductForm", await FormAsync(ProductInput.From(product), id, ct));
         }
 
         [HttpPost]
-        public IActionResult AddProduct(Product product)
+        public async Task<IActionResult> UpdateProduct(int id, [Bind(Prefix = "Input")] ProductInput input, CancellationToken ct)
         {
-            _context.Products.Add(product);
-            _context.SaveChanges();
-            return RedirectToAction("ProductList");
-        }
+            if (!ModelState.IsValid) return View("ProductForm", await FormAsync(input, id, ct));
 
-        // ----------- DELETE -----------
-        public IActionResult DeleteProduct(int id)
-        {
-            var product = _context.Products.Find(id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-                _context.SaveChanges();
-            }
-            return RedirectToAction("ProductList");
-        }
+            var result = await _products.UpdateAsync(id, input.ToEntity(), ct);
+            if (result.IsNotFound) return NotFound();
 
-        // ----------- UPDATE -----------
-        [HttpGet]
-        public IActionResult UpdateProduct(int id)
-        {
-            var product = _context.Products.Find(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
-            return View(product);
+            Flash(result, "Ürün güncellendi.");
+            return RedirectToAction(nameof(ProductList));
         }
 
         [HttpPost]
-        public IActionResult UpdateProduct(Product product)
-        {       
-            _context.Products.Update(product);
-            _context.SaveChanges();
-            return RedirectToAction("ProductList");
+        public async Task<IActionResult> DeleteProduct(int id, CancellationToken ct)
+        {
+            Flash(await _products.DeleteAsync(id, ct), "Ürün silindi.");
+            return RedirectToAction(nameof(ProductList));
+        }
+
+        private async Task<FormPage<ProductInput>> FormAsync(ProductInput input, int? id, CancellationToken ct)
+        {
+            var categories = await _categories.GetAllAsync(ct);
+            return new FormPage<ProductInput>(input, id)
+            {
+                Options = categories
+                    .Select(c => new SelectListItem(c.Status ? c.CategoryName : $"{c.CategoryName} (pasif)", c.CategoryId.ToString()))
+                    .ToList()
+            };
         }
     }
 }

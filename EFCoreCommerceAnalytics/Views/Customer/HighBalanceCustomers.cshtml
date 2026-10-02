@@ -1,0 +1,31 @@
+@model PagedList<Customer>
+@{
+    var threshold = (decimal)ViewData["Threshold"]!;
+    ViewData["Title"] = "Yüksek bakiyeli müşteriler";
+}
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-1">Bakiyesi @threshold.ToString("C0") ve üzeri olan müşteriler</h4>
+        <p class="text-muted small">@Model.TotalCount müşteri, bakiyeye göre büyükten küçüğe.</p>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:56px"></th>
+                        <th>Ad soyad</th>
+                        <th>Şehir / ilçe</th>
+                        <th class="text-right">Bakiye</th>
+                        <th style="width:180px" class="text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <partial name="_CustomerRows" model="Model" />
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            @* Eski sayfalama linkleri var olmayan "HighBalanceCustomers" action'ına gidiyordu; şimdi sayfanın adı bu. *@
+            <partial name="_Pagination" model='PagerModel.For(Model, "HighBalanceCustomers")' />
+        </div>
+    </div>
+</div>

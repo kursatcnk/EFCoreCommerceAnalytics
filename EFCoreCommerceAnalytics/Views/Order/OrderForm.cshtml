@@ -1,0 +1,116 @@
+@using System.Globalization
+@model OrderFormPage
+@{
+    ViewData["Title"] = Model.IsEdit ? $"#{Model.Id} numaralı sipariş" : "Yeni sipariş";
+    var action = Model.IsEdit ? "UpdateOrder" : "CreateOrder";
+    var selected = Model.Products.FirstOrDefault(p => p.ProductId == Model.Input.ProductId);
+}
+<div class="row">
+    <div class="col-lg-8 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewData["Title"]</h4>
+                <p class="text-muted small">Birim fiyat ürünün güncel fiyatından alınır ve sunucuda hesaplanır.</p>
+
+                <form asp-action="@action" asp-route-id="@Model.Id" method="post" class="forms-sample" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.CustomerId"></label>
+                        <div class="input-group">
+                            <select asp-for="Input.CustomerId" class="form-control" id="customer">
+                                <option value="0">Müşteri seçin</option>
+                                @foreach (var c in Model.Customers)
+                                {
+                                    <option value="@c.CustomerId" selected="@(c.CustomerId == Model.Input.CustomerId)">@c.FullName · @c.CustomerCity</option>
+                                }
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#customerModal" title="Müşteri ara">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Input.CustomerId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.ProductId"></label>
+                        <div class="input-group">
+                            <select asp-for="Input.ProductId" class="form-control" id="product">
+                                <option value="0" data-price="0">Ürün seçin</option>
+                                @foreach (var p in Model.Products)
+                                {
+                                    <option value="@p.ProductId" data-price="@p.ProductPrice.ToString(CultureInfo.InvariantCulture)"
+                                            selected="@(p.ProductId == Model.Input.ProductId)">@p.ProductName (@p.ProductPrice.ToString("C"))</option>
+                                }
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#productModal" title="Ürün ara">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Input.ProductId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-sm-4">
+                            <label asp-for="Input.Quantity"></label>
+                            <input asp-for="Input.Quantity" type="number" min="1" step="1" class="form-control" id="quantity" />
+                            <span asp-validation-for="Input.Quantity" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label>Birim fiyat</label>
+                            <input type="text" class="form-control" id="unitPrice" readonly value="@(selected?.ProductPrice.ToString("C"))" />
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label>Tahmini toplam</label>
+                            <input type="text" class="form-control font-weight-bold" id="totalPrice" readonly />
+                        </div>
+                    </div>
+
+                    @if (Model.IsEdit)
+                    {
+                        <div class="form-group">
+                            <label asp-for="Input.Status"></label>
+                            <select asp-for="Input.Status" class="form-control">
+                                @foreach (var status in Model.Statuses)
+                                {
+                                    <option value="@status" selected="@(status == Model.Input.Status)">@status</option>
+                                }
+                            </select>
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-primary mr-2">@(Model.IsEdit ? "Kaydet" : "Siparişi oluştur")</button>
+                    <a asp-action="OrderList" class="btn btn-light">Vazgeç</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="customerModal" tabindex="-1" role="dialog" aria-label="Müşteri ara">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content p-3">
+            <h5>Müşteri ara</h5>
+            <input type="search" class="form-control mb-2" placeholder="Ad ya da soyad" data-picker-search="@Url.Action("SearchCustomers")" data-picker-target="customer" />
+            <div class="list-group" data-picker-results></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-label="Ürün ara">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content p-3">
+            <h5>Ürün ara</h5>
+            <input type="search" class="form-control mb-2" placeholder="Ürün adı" data-picker-search="@Url.Action("SearchProducts")" data-picker-target="product" />
+            <div class="list-group" data-picker-results></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/order-form.js" asp-append-version="true"></script>
+}

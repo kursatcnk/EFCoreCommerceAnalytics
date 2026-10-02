@@ -99,12 +99,17 @@ namespace EFCoreCommerceAnalytics.Services
             return OperationResult.Ok();
         }
 
-        public async Task<IReadOnlyList<CityCustomerCount>> GetCustomerCountsByCityAsync(CancellationToken ct = default) =>
-            await _db.Customers.AsNoTracking()
+        public async Task<IReadOnlyList<CityCustomerCount>> GetCustomerCountsByCityAsync(CancellationToken ct = default)
+        {
+            // Sıralama SQL'de yapılabilsin diye önce anonim tipe, sonra bellekte record'a çevriliyor.
+            var rows = await _db.Customers.AsNoTracking()
                 .GroupBy(c => c.CustomerCity)
-                .Select(g => new CityCustomerCount(g.Key, g.Count()))
-                .OrderByDescending(x => x.CustomerCount)
+                .Select(g => new { City = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
                 .ToListAsync(ct);
+
+            return rows.Select(r => new CityCustomerCount(r.City, r.Count)).ToList();
+        }
 
         /// <summary>
         /// En çok sipariş alan şehirler ve her şehirde en çok sipariş veren müşteri.

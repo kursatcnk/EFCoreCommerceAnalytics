@@ -1,0 +1,38 @@
+@model ToDoTablePage
+@{
+    ViewData["Title"] = Model.Title;
+}
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-1">@Model.Title</h4>
+        <p class="text-muted small">@Model.Items.Count görev</p>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="width:70px">#</th>
+                        <th>Açıklama</th>
+                        <th>Öncelik</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items.Count == 0)
+                    {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Bu önceliklerde görev yok.</td></tr>
+                    }
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-muted">@item.TodoId</td>
+                            <td>@item.ToDoDescription</td>
+                            <td>@item.Priority</td>
+                            <td><partial name="_ToDoStatus" model="item.ToDoStatus" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <a asp-action="Create" class="btn btn-outline-primary mt-3">Görev ekle</a>
+    </div>
+</div>

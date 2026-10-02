@@ -1,177 +1,79 @@
-﻿using EFCoreCommerceAnalytics.Context;
-using EFCoreCommerceAnalytics.Entities;
+using EFCoreCommerceAnalytics.Models;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
-    public class CustomerController : Controller
+    public class CustomerController : AppController
     {
-        private readonly AppDbContext _context;
+        /// <summary>"Yüksek bakiyeli müşteriler" raporunun eşiği.</summary>
+        public const decimal HighBalanceThreshold = 1000m;
 
-        // Veri tabanı işlemleri için context'i alıyoruz
-        public CustomerController(AppDbContext context)
+        private readonly ICustomerService _customers;
+
+        public CustomerController(ICustomerService customers) => _customers = customers;
+
+        public async Task<IActionResult> CustomerList(string? search, int page = 1, CancellationToken ct = default)
         {
-            _context = context;
+            var model = await _customers.GetPagedAsync(search, page, ct);
+            return IsAjaxRequest ? PartialView("_CustomerRows", model) : View(model);
         }
 
-        // Müşteri listesini sayfalı ve aramalı getirir, AJAX isteğinde sadece tablo satırlarını döner
-        public async Task<IActionResult> CustomerList(string search = "", int page = 1)
-        {
-            int pageSize = 10;
-            var query = _context.Customers.AsQueryable();
-
-            // Arama filtresi uygula
-            if (!string.IsNullOrEmpty(search))
-            {
-                search = search.ToLower();
-                query = query.Where(c =>
-                    c.CustomerFirstName.ToLower().Contains(search) ||
-                    c.CustomerLastName.ToLower().Contains(search));
-            }
-
-            // Toplam sayfa ve sayfalama bilgisi
-            int totalCount = await query.CountAsync();
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            ViewBag.CurrentPage = page;
-            ViewBag.Search = search;
-
-            var customers = await query
-                            .OrderBy(c => c.CustomerId)
-                            .Skip((page - 1) * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync();
-
-            // AJAX isteği geldiğinde tablo satırlarını döner
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                var html = string.Join("", customers.Select(c => $@"
-                    <tr>
-                        <td>{c.CustomerId}</td>
-                        <td>{c.CustomerFirstName}</td>
-                        <td>{c.CustomerLastName}</td>
-                        <td>{c.CustomerCity}</td>
-                        <td>{c.CustomerDistrict}</td>
-                        <td>{c.CustomerBalance:C}</td>
-                        <td>{(!string.IsNullOrEmpty(c.CustomerImageUrl) ? $"<img src='{c.CustomerImageUrl}' style='width:50px;height:50px;object-fit:cover;' />" : "")}</td>
-                        <td>
-                            <a href='/Customer/DeleteCustomer/{c.CustomerId}' class='btn btn-outline-danger btn-sm'>Sil</a>
-                            <a href='/Customer/UpdateCustomer/{c.CustomerId}' class='btn btn-outline-success btn-sm'>Güncelle</a>
-                        </td>
-                    </tr>
-                "));
-                return Content(html, "text/html");
-            }
-
-            return View(customers);
-        }
-
-        // En çok sipariş alan 3 şehir ve şehirlerde en çok sipariş veren müşterileri getirir
         [HttpGet]
-        public async Task<IActionResult> TopCitiesWithTopCustomers()
-        {
-            // Şehir bazlı toplam sipariş sayısı
-            var topCities = await _context.Orders
-                .GroupBy(o => o.Customer.CustomerCity)
-                .Select(g => new { City = g.Key, TotalOrders = g.Count() })
-                .OrderByDescending(g => g.TotalOrders)
-                .Take(3)
-                .ToListAsync();
+        public IActionResult CreateCustomer() => View("CustomerForm", new FormPage<CustomerInput>(new CustomerInput()));
 
-            var result = new List<dynamic>();
-
-            foreach (var city in topCities)
-            {
-                // Şehirde en çok sipariş veren müşteri
-                var topCustomer = await _context.Orders
-                    .Where(o => o.Customer.CustomerCity == city.City)
-                    .GroupBy(o => new { o.CustomerId, o.Customer.CustomerFirstName, o.Customer.CustomerLastName })
-                    .Select(g => new { CustomerId = g.Key.CustomerId, Name = $"{g.Key.CustomerFirstName} {g.Key.CustomerLastName}", OrdersCount = g.Count() })
-                    .OrderByDescending(g => g.OrdersCount)
-                    .FirstOrDefaultAsync();
-
-                result.Add(new
-                {
-                    city.City,
-                    city.TotalOrders,
-                    topCustomer.CustomerId,
-                    topCustomer.Name,
-                    topCustomer.OrdersCount
-                });
-            }
-
-            return View(result);
-        }
-
-        // Yeni müşteri oluşturma formunu döner
-        [HttpGet]
-        public IActionResult CreateCustomer() => View();
-
-        // Yeni müşteri oluşturur ve kaydeder
         [HttpPost]
-        public async Task<IActionResult> CreateCustomer(Customer customer)
+        public async Task<IActionResult> CreateCustomer([Bind(Prefix = "Input")] CustomerInput input, CancellationToken ct)
         {
-            await _context.Customers.AddAsync(customer); // Müşteri ekle
-            await _context.SaveChangesAsync(); // Değişiklikleri kaydet
-            return RedirectToAction("CustomerList"); // Listeye yönlendir
+            if (!ModelState.IsValid) return View("CustomerForm", new FormPage<CustomerInput>(input));
+
+            await _customers.CreateAsync(input.ToEntity(), ct);
+            FlashSuccess($"{input.FirstName} {input.LastName} eklendi.");
+            return RedirectToAction(nameof(CustomerList));
         }
 
-        // Belirtilen müşteriyi siler
-        public async Task<IActionResult> DeleteCustomer(int id)
-        {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer != null)
-            {
-                _context.Customers.Remove(customer);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction("CustomerList");
-        }
-
-        // Müşteri güncelleme formunu döner
         [HttpGet]
-        public async Task<IActionResult> UpdateCustomer(int id)
+        public async Task<IActionResult> UpdateCustomer(int id, CancellationToken ct)
         {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer == null) return NotFound();
-            return View(customer);
+            var customer = await _customers.GetAsync(id, ct);
+            if (customer is null) return NotFound();
+
+            return View("CustomerForm", new FormPage<CustomerInput>(CustomerInput.From(customer), id));
         }
 
-        // Müşteri bilgilerini günceller
         [HttpPost]
-        public async Task<IActionResult> UpdateCustomer(Customer customer)
+        public async Task<IActionResult> UpdateCustomer(int id, [Bind(Prefix = "Input")] CustomerInput input, CancellationToken ct)
         {
-            var existingCustomer = await _context.Customers.FindAsync(customer.CustomerId);
-            if (existingCustomer == null) return NotFound();
+            if (!ModelState.IsValid) return View("CustomerForm", new FormPage<CustomerInput>(input, id));
 
-            existingCustomer.CustomerFirstName = customer.CustomerFirstName;
-            existingCustomer.CustomerLastName = customer.CustomerLastName;
-            existingCustomer.CustomerCity = customer.CustomerCity;
-            existingCustomer.CustomerDistrict = customer.CustomerDistrict;
-            existingCustomer.CustomerBalance = customer.CustomerBalance;
-            existingCustomer.CustomerImageUrl = customer.CustomerImageUrl;
+            var result = await _customers.UpdateAsync(id, input.ToEntity(), ct);
+            if (result.IsNotFound) return NotFound();
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction("CustomerList");
+            Flash(result, "Müşteri güncellendi.");
+            return RedirectToAction(nameof(CustomerList));
         }
 
-        // Bakiyesi 1000’in üzerinde olan müşterileri sayfalı listeler
+        [HttpPost]
+        public async Task<IActionResult> DeleteCustomer(int id, string? returnUrl, CancellationToken ct)
+        {
+            Flash(await _customers.DeleteAsync(id, ct), "Müşteri silindi.");
+            return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl) : RedirectToAction(nameof(CustomerList));
+        }
+
+        /// <summary>Bakiyesi eşiğin üzerinde olan müşteriler (eski adıyla CustomersNormalBalance).</summary>
+        public async Task<IActionResult> HighBalanceCustomers(int page = 1, CancellationToken ct = default)
+        {
+            ViewData["Threshold"] = HighBalanceThreshold;
+            return View(await _customers.GetWithBalanceAtLeastAsync(HighBalanceThreshold, page, ct));
+        }
+
         [HttpGet]
-        public async Task<IActionResult> CustomersNormalBalance(int page = 1)
-        {
-            int pageSize = 10;
-            var allCustomers = await _context.Customers.ToListAsync();
-            var highBalanceCustomers = allCustomers.Where(c => c.CustomerBalance < 1000).ToList();
-            var normalCustomers = allCustomers.Except(highBalanceCustomers)
-                .OrderBy(c => c.CustomerId)
-                .ToList();
+        public IActionResult CustomersNormalBalance(int page = 1) => RedirectToActionPermanent(nameof(HighBalanceCustomers), new { page });
 
-            int totalCount = normalCustomers.Count;
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            ViewBag.CurrentPage = page;
+        public async Task<IActionResult> CustomersByCity(CancellationToken ct) =>
+            View(await _customers.GetCustomerCountsByCityAsync(ct));
 
-            var pageCustomers = normalCustomers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-            return View(pageCustomers);
-        }
+        public async Task<IActionResult> TopCitiesWithTopCustomers(CancellationToken ct) =>
+            View(await _customers.GetTopCitiesWithTopCustomersAsync(3, ct));
     }
 }

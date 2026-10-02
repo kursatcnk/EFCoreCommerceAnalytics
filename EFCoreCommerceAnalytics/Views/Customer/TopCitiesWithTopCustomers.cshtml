@@ -1,43 +1,37 @@
-﻿@model List<dynamic>
+@model IReadOnlyList<TopCityCustomer>
 @{
-    ViewData["Title"] = "En Çok Sipariş Alan Şehirler ve Müşteriler";
-    Layout = "~/Views/_Layout/Index.cshtml";
+    ViewData["Title"] = "En çok sipariş alan şehirler";
 }
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">En Çok Sipariş Alan 3 Şehir</h4>
-                <p class="card-description">
-                    <code>Her şehirdeki en çok sipariş veren müşteri listelenmiştir.</code>
-                </p>
-
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Şehir</th>
-                                <th>Toplam Sipariş</th>
-                                <th>Müşteri ID</th>
-                                <th>Müşteri Adı</th>
-                                <th>Sipariş Sayısı</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>@item.City</td>
-                                    <td>@item.TotalOrders</td>
-                                    <td>@item.CustomerId</td>
-                                    <td>@item.Name</td>
-                                    <td>@item.OrdersCount</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-1">En çok sipariş alan 3 şehir</h4>
+        <p class="text-muted small">Her şehirde en çok sipariş veren müşteriyle birlikte. İptal edilen siparişler sayılmıyor.</p>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Şehir</th>
+                        <th class="text-right">Toplam sipariş</th>
+                        <th>En çok sipariş veren</th>
+                        <th class="text-right">Siparişi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Henüz sipariş yok.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="font-weight-bold">@item.City</td>
+                            <td class="text-right">@item.TotalOrders</td>
+                            <td><a asp-action="UpdateCustomer" asp-route-id="@item.CustomerId">@item.CustomerName</a></td>
+                            <td class="text-right">@item.CustomerOrderCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

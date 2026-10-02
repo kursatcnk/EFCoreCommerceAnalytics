@@ -1,208 +1,128 @@
-﻿using EFCoreCommerceAnalytics.Context;
-using EFCoreCommerceAnalytics.Entities;
+using EFCoreCommerceAnalytics.Models;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
-    public class OrderController : Controller
+    public class OrderController : AppController
     {
-        private readonly AppDbContext _context;
-        public OrderController(AppDbContext context)
+        private readonly IOrderService _orders;
+        private readonly ICustomerService _customers;
+        private readonly IProductService _products;
+
+        public OrderController(IOrderService orders, ICustomerService customers, IProductService products)
         {
-            _context = context;
+            _orders = orders;
+            _customers = customers;
+            _products = products;
         }
 
-        // -------- LIST + AJAX (Asenkron) --------
-        public async Task<IActionResult> OrderList(string search = "", int page = 1)
-        {
-            int pageSize = 10;
-            var query = _context.Orders
-                                .Include(o => o.Customer)
-                                .Include(o => o.Product)
-                                .Where(o => o.SaleStatus != OrderStatuses.Cancelled) // sadece iptal olmayanlar
-                                .AsQueryable();
+        /// <summary>İptal edilmemiş siparişler, numara sırasıyla.</summary>
+        public Task<IActionResult> OrderList(string? search, int page = 1, CancellationToken ct = default) =>
+            ListAsync(OrderListFilter.Active, newestFirst: false, search, page, "Siparişler", nameof(OrderList), ct);
 
-            if (!string.IsNullOrEmpty(search))
+        /// <summary>İptal edilmemiş siparişler, en yeniden eskiye.</summary>
+        public Task<IActionResult> ActiveOrders(string? search, int page = 1, CancellationToken ct = default) =>
+            ListAsync(OrderListFilter.Active, newestFirst: true, search, page, "Aktif siparişler (en yeni önce)", nameof(ActiveOrders), ct);
+
+        /// <summary>Eski adres; menüdeki ve dışarıdaki bağlantılar bozulmasın diye yönlendiriliyor.</summary>
+        [HttpGet]
+        public IActionResult DeliveredAndActiveOrders(int page = 1) => RedirectToActionPermanent(nameof(ActiveOrders), new { page });
+
+        /// <summary>İptal edilenler. Arama kutusu ve sayfalama vardı ama action bunları desteklemiyordu; artık destekliyor.</summary>
+        public Task<IActionResult> CanceledOrders(string? search, int page = 1, CancellationToken ct = default) =>
+            ListAsync(OrderListFilter.Cancelled, newestFirst: true, search, page, "İptal edilen siparişler", nameof(CanceledOrders), ct);
+
+        [HttpGet]
+        public async Task<IActionResult> CreateOrder(CancellationToken ct) =>
+            View("OrderForm", await FormAsync(new OrderInput(), null, ct));
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOrder([Bind(Prefix = "Input")] OrderInput input, CancellationToken ct)
+        {
+            if (ModelState.IsValid)
             {
-                search = search.ToLower();
-                query = query.Where(o =>
-                    o.Customer.CustomerFirstName.ToLower().Contains(search) ||
-                    o.Customer.CustomerLastName.ToLower().Contains(search) ||
-                    o.Product.ProductName.ToLower().Contains(search) ||
-                    o.SaleStatus.ToLower().Contains(search));
+                var result = await _orders.CreateAsync(input.CustomerId, input.ProductId, input.Quantity, ct);
+                if (result.Succeeded)
+                {
+                    FlashSuccess("Sipariş oluşturuldu.");
+                    return RedirectToAction(nameof(OrderList));
+                }
+
+                ModelState.AddModelError(string.Empty, result.Error!);
             }
 
-            int totalCount = await query.CountAsync();
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            ViewBag.CurrentPage = page;
-            ViewBag.Search = search;
-
-            var orders = await query
-                         .OrderBy(o => o.OrderId)
-                         .Skip((page - 1) * pageSize)
-                         .Take(pageSize)
-                         .ToListAsync();
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                var html = string.Join("", orders.Select(o => $@"
-                    <tr>
-                        <td>{o.OrderId}</td>
-                        <td>{o.Product?.ProductName}</td>
-                        <td>{o.Customer?.CustomerFirstName} {o.Customer?.CustomerLastName}</td>
-                        <td>{o.OrderCount}</td>
-                        <td>{o.UnitPrice:C}</td>
-                        <td>{o.TotalPrice:C}</td>
-                        <td>{o.OrderDate:dd.MM.yyyy}</td>
-                        <td>{o.SaleStatus}</td>
-                        <td>
-                            <a href='/Order/CancelOrder/{o.OrderId}' class='btn btn-outline-danger btn-sm'>İptal Et</a>
-                            <a href='/Order/UpdateOrder/{o.OrderId}' class='btn btn-outline-success btn-sm'>İşlem Yap</a>
-                        </td>
-                    </tr>
-                "));
-                return Content(html, "text/html");
-            }
-
-            return View(orders);
+            return View("OrderForm", await FormAsync(input, null, ct));
         }
 
-        // -------- TESLİM EDİLDİ VE İPTAL OLMAYANLAR (PAGINATION) --------
+        /// <summary>Menüde "İşlem Yap" olarak bağlanan bu sayfanın view'ı hiç yoktu; açılınca hata veriyordu.</summary>
         [HttpGet]
-        public async Task<IActionResult> DeliveredAndActiveOrders(int page = 1)
+        public async Task<IActionResult> UpdateOrder(int id, CancellationToken ct)
         {
-            int pageSize = 10;
+            var order = await _orders.GetAsync(id, ct);
+            if (order is null) return NotFound();
 
-            var query = _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.Product)
-                .Where(o => o.SaleStatus != OrderStatuses.Cancelled) // sadece iptal olmayanlar
-                .OrderByDescending(o => o.OrderDate)
-                .AsQueryable();
-
-            int totalCount = await query.CountAsync();
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            ViewBag.CurrentPage = page;
-
-            var orders = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return View(orders);
-        }
-
-
-        // -------- CREATE --------
-        [HttpGet]
-        public async Task<IActionResult> CreateOrder()
-        {
-            ViewBag.Customers = await _context.Customers.ToListAsync();
-            ViewBag.Products = await _context.Products.ToListAsync();
-            return View();
+            var input = new OrderInput { CustomerId = order.CustomerId, ProductId = order.ProductId, Quantity = order.OrderCount, Status = order.SaleStatus };
+            return View("OrderForm", await FormAsync(input, id, ct));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrder(Order order)
+        public async Task<IActionResult> UpdateOrder(int id, [Bind(Prefix = "Input")] OrderInput input, CancellationToken ct)
         {
-            order.UnitPrice = await _context.Products
-                                      .Where(p => p.ProductId == order.ProductId)
-                                      .Select(p => p.ProductPrice)
-                                      .FirstOrDefaultAsync();
+            if (ModelState.IsValid)
+            {
+                var result = await _orders.UpdateAsync(id, input.CustomerId, input.ProductId, input.Quantity, input.Status, ct);
+                if (result.IsNotFound) return NotFound();
+                if (result.Succeeded)
+                {
+                    FlashSuccess($"#{id} numaralı sipariş güncellendi.");
+                    return RedirectToAction(nameof(OrderList));
+                }
 
-            order.TotalPrice = order.UnitPrice * order.OrderCount;
-            order.OrderDate = DateTime.Now;
+                ModelState.AddModelError(string.Empty, result.Error!);
+            }
 
-            await _context.Orders.AddAsync(order);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("OrderList");
-        }
-
-        // -------- UPDATE --------
-        [HttpGet]
-        public async Task<IActionResult> UpdateOrder(int id)
-        {
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
-
-            ViewBag.Customers = await _context.Customers.ToListAsync();
-            ViewBag.Products = await _context.Products.ToListAsync();
-            return View(order);
+            return View("OrderForm", await FormAsync(input, id, ct));
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateOrder(Order order)
+        public async Task<IActionResult> CancelOrder(int id, CancellationToken ct)
         {
-            var existing = await _context.Orders.FindAsync(order.OrderId);
-            if (existing == null) return NotFound();
-
-            existing.CustomerId = order.CustomerId;
-            existing.ProductId = order.ProductId;
-            existing.OrderCount = order.OrderCount;
-            existing.UnitPrice = await _context.Products
-                                         .Where(p => p.ProductId == order.ProductId)
-                                         .Select(p => p.ProductPrice)
-                                         .FirstOrDefaultAsync();
-            existing.TotalPrice = existing.UnitPrice * order.OrderCount;
-            existing.SaleStatus = order.SaleStatus;
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction("OrderList");
+            Flash(await _orders.CancelAsync(id, ct), $"#{id} numaralı sipariş iptal edildi.");
+            return RedirectToAction(nameof(OrderList));
         }
 
-        // -------- CANCEL --------
-        public async Task<IActionResult> CancelOrder(int id)
+        /// <summary>Sipariş formundaki müşteri arama penceresi için.</summary>
+        [HttpGet]
+        public async Task<IActionResult> SearchCustomers(string? term, CancellationToken ct)
         {
-            var order = await _context.Orders.FindAsync(id);
-            if (order != null)
-            {
-                order.SaleStatus = OrderStatuses.Cancelled;
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction("OrderList");
+            var customers = await _customers.SearchAsync(term, ct: ct);
+            return Json(customers.Select(c => new { id = c.CustomerId, name = c.FullName, city = c.CustomerCity }));
         }
 
-        // -------- CANCELED ORDERS --------
-        public async Task<IActionResult> CanceledOrders()
+        /// <summary>Sipariş formundaki ürün arama penceresi için.</summary>
+        [HttpGet]
+        public async Task<IActionResult> SearchProducts(string? term, CancellationToken ct)
         {
-            var canceledOrders = await _context.Orders
-                                         .Include(o => o.Customer)
-                                         .Include(o => o.Product)
-                                         .Where(o => o.SaleStatus == OrderStatuses.Cancelled)
-                                         .ToListAsync();
-            return View(canceledOrders);
+            var products = await _products.SearchAsync(term, ct: ct);
+            return Json(products.Select(p => new { id = p.ProductId, name = p.ProductName, price = p.ProductPrice }));
         }
 
-        // -------- SEARCH FOR MODALS --------
-        public async Task<IActionResult> SearchCustomers(string term)
+        private async Task<IActionResult> ListAsync(OrderListFilter filter, bool newestFirst, string? search, int page, string title, string action, CancellationToken ct)
         {
-            var customers = await _context.Customers
-                                    .Where(c => c.CustomerFirstName.ToLower().Contains(term.ToLower()) ||
-                                                c.CustomerLastName.ToLower().Contains(term.ToLower()))
-                                    .Select(c => new
-                                    {
-                                        c.CustomerId,
-                                        c.CustomerFirstName,
-                                        c.CustomerLastName
-                                    }).ToListAsync();
-
-            return Json(customers);
+            var model = await _orders.GetPagedAsync(filter, search, page, newestFirst, ct);
+            ViewData["ShowActions"] = filter == OrderListFilter.Active;
+            ViewData["Title"] = title;
+            ViewData["ListAction"] = action;
+            return IsAjaxRequest ? PartialView("_OrderRows", model) : View("Orders", model);
         }
 
-        public async Task<IActionResult> SearchProducts(string term)
+        private async Task<OrderFormPage> FormAsync(OrderInput input, int? id, CancellationToken ct) => new()
         {
-            var products = await _context.Products
-                                   .Where(p => p.ProductName.ToLower().Contains(term.ToLower()))
-                                   .Select(p => new
-                                   {
-                                       p.ProductId,
-                                       p.ProductName,
-                                       p.ProductPrice
-                                   }).ToListAsync();
-
-            return Json(products);
-        }
+            Input = input,
+            Id = id,
+            Customers = await _customers.GetAllAsync(ct),
+            Products = await _products.GetAllAsync(ct)
+        };
     }
 }

@@ -1,0 +1,68 @@
+@model FormPage<CustomerInput>
+@{
+    ViewData["Title"] = Model.IsEdit ? "Müşteri düzenle" : "Müşteri ekle";
+    var action = Model.IsEdit ? "UpdateCustomer" : "CreateCustomer";
+}
+<div class="row">
+    <div class="col-lg-8 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewData["Title"]</h4>
+                @* Eski düzenleme formunda resim için dosya seçici vardı ama dosya hiç kaydedilmiyordu; üstelik kaydetmek
+                   mevcut resim adresini siliyordu. Ekleme formuyla aynı şekilde adres alanı kullanılıyor. *@
+                <form asp-action="@action" asp-route-id="@Model.Id" method="post" class="forms-sample" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                    <div class="form-row">
+                        <div class="form-group col-sm-6">
+                            <label asp-for="Input.FirstName"></label>
+                            <input asp-for="Input.FirstName" class="form-control" autocomplete="given-name" />
+                            <span asp-validation-for="Input.FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            <label asp-for="Input.LastName"></label>
+                            <input asp-for="Input.LastName" class="form-control" autocomplete="family-name" />
+                            <span asp-validation-for="Input.LastName" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-sm-6">
+                            <label asp-for="Input.City"></label>
+                            <input asp-for="Input.City" class="form-control" />
+                            <span asp-validation-for="Input.City" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            <label asp-for="Input.District"></label>
+                            <input asp-for="Input.District" class="form-control" />
+                            <span asp-validation-for="Input.District" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.Balance"></label>
+                        <div class="input-group">
+                            <input asp-for="Input.Balance" type="number" step="0.01" min="0" class="form-control"
+                                   value="@Model.Input.Balance.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                            <div class="input-group-append"><span class="input-group-text">₺</span></div>
+                        </div>
+                        <span asp-validation-for="Input.Balance" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.ImageUrl"></label>
+                        <input asp-for="Input.ImageUrl" type="url" class="form-control" placeholder="https://" />
+                        <span asp-validation-for="Input.ImageUrl" class="text-danger small"></span>
+                        @if (!string.IsNullOrWhiteSpace(Model.Input.ImageUrl))
+                        {
+                            <img src="@Model.Input.ImageUrl" alt="" class="rounded-circle mt-2" style="width:64px;height:64px;object-fit:cover" />
+                        }
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mr-2">@(Model.IsEdit ? "Kaydet" : "Ekle")</button>
+                    <a asp-action="CustomerList" class="btn btn-light">Vazgeç</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,117 +1,39 @@
-﻿@model List<Customer>
+@model PagedList<Customer>
 @{
-    ViewData["Title"] = "CustomerList";
-    Layout = "~/Views/_Layout/Index.cshtml";
-
-    int currentPage = ViewBag.CurrentPage ?? 1;
-    int totalPages = ViewBag.TotalPages ?? 1;
+    ViewData["Title"] = "Müşteriler";
 }
-
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Müşteriler</h4>
-                <p class="card-description">
-                    <code>Müşterilerle ilgili işlemleri buradan yapabilirsiniz</code>
-                </p>
-
-                <!-- Arama inputu -->
-                <input type="text" id="searchInput" class="form-control mb-3" placeholder="Müşteri adı ile ara..." />
-
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Adı</th>
-                                <th>Soyadı</th>
-                                <th>Şehir</th>
-                                <th>İlçe</th>
-                                <th>Bakiye</th>
-                                <th>Resim</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customerTableBody">
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>@item.CustomerId</td>
-                                    <td>@item.CustomerFirstName</td>
-                                    <td>@item.CustomerLastName</td>
-                                    <td>@item.CustomerCity</td>
-                                    <td>@item.CustomerDistrict</td>
-                                    <td>@item.CustomerBalance.ToString("C")</td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(item.CustomerImageUrl))
-                                        {
-                                            <img src="@item.CustomerImageUrl" alt="Customer Image" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;" />
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton@item.CustomerId" data-bs-toggle="dropdown" aria-expanded="false">
-                                                İşlemler
-                                            </button>
-                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton@item.CustomerId">
-                                                <li><a class="dropdown-item text-success" href="/Customer/UpdateCustomer/@item.CustomerId">Güncelle</a></li>
-                                                <li><a class="dropdown-item text-danger" href="/Customer/DeleteCustomer/@item.CustomerId">Sil</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="/Customer/CreateCustomer" class="btn btn-outline-primary">Yeni</a>
-
-                    <nav aria-label="Sayfalama">
-                        <ul class="pagination mb-0">
-                            @for (int i = 1; i <= totalPages; i++)
-                            {
-                                <li class="page-item @(i == currentPage ? "active" : "")">
-                                    <a class="page-link" href="@Url.Action("CustomerList", new { page = i })">@i</a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
-                </div>
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+            <div>
+                <h4 class="card-title mb-1">Müşteriler</h4>
+                <p class="text-muted small mb-0">@Model.TotalCount müşteri</p>
             </div>
+            <a asp-action="CreateCustomer" class="btn btn-sm btn-primary"><i class="fas fa-plus mr-1"></i> Yeni müşteri</a>
+        </div>
+
+        <input type="search" class="form-control mb-3" placeholder="Ad, soyad ya da şehir ile ara…" aria-label="Müşteri ara"
+               value="@Model.Search" data-list-search="@Url.Action("CustomerList")" data-target="#customerRows" />
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:56px"></th>
+                        <th>Ad soyad</th>
+                        <th>Şehir / ilçe</th>
+                        <th class="text-right">Bakiye</th>
+                        <th style="width:180px" class="text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="customerRows">
+                    <partial name="_CustomerRows" model="Model" />
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+            <partial name="_Pagination" model='PagerModel.For(Model, "CustomerList")' />
         </div>
     </div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        let typingTimer;
-        let doneTypingInterval = 300;
-
-        $('#searchInput').on('keyup', function () {
-            clearTimeout(typingTimer);
-            let query = $(this).val();
-
-            typingTimer = setTimeout(function () {
-                $.ajax({
-                    url: '/Customer/CustomerList',
-                    type: 'GET',
-                    data: { search: query },
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    success: function (result) {
-                        $('#customerTableBody').html(result);
-
-                        if(query.length > 0){
-                            $('.pagination').hide();
-                        } else {
-                            $('.pagination').show();
-                        }
-                    }
-                });
-            }, doneTypingInterval);
-        });
-    });
-</script>

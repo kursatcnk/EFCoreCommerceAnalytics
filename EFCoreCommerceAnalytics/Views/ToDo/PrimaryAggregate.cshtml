@@ -1,0 +1,41 @@
+@model IReadOnlyList<ToDo>
+@{
+    ViewData["Title"] = "Birincil görevler (Aggregate)";
+    var joined = ViewData["Joined"] as string;
+}
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-1">Birincil görevler</h4>
+        <p class="text-muted small">@Model.Count görev</p>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th style="width:70px">#</th><th>Açıklama</th><th>Durum</th></tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-center text-muted py-4">Birincil görev yok.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted">@item.TodoId</td>
+                            <td>@item.ToDoDescription</td>
+                            <td><partial name="_ToDoStatus" model="item.ToDoStatus" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!string.IsNullOrEmpty(joined))
+        {
+            <div class="mt-3">
+                <p class="font-weight-bold mb-1">Aggregate ile birleştirilmiş açıklamalar</p>
+                <p class="text-muted mb-0">@joined</p>
+            </div>
+        }
+    </div>
+</div>

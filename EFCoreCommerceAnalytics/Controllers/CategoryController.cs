@@ -1,103 +1,61 @@
-﻿using EFCoreCommerceAnalytics.Context;
-using EFCoreCommerceAnalytics.Entities;
+using EFCoreCommerceAnalytics.Models;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
-    public class CategoryController : Controller
+    public class CategoryController : AppController
     {
-        private readonly AppDbContext _context;
-        public CategoryController(AppDbContext context)
+        private readonly ICategoryService _categories;
+
+        public CategoryController(ICategoryService categories) => _categories = categories;
+
+        /// <summary>Liste. Arama kutusundan gelen AJAX isteğinde yalnızca tablo satırları (partial) döner.</summary>
+        public async Task<IActionResult> CategoryList(string? search, int page = 1, CancellationToken ct = default)
         {
-            _context = context;
-        }
-
-        // AJAX ve arama desteği
-        public async Task<IActionResult> CategoryList(string search = "", int page = 1)
-        {
-            int pageSize = 10;
-            var query = _context.Categories.AsQueryable();
-
-            // Arama filtresi
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                search = search.ToLower();
-                query = query.Where(c => c.CategoryName.ToLower().Contains(search));
-            }
-
-            // Toplam sayfa bilgisi
-            int totalCount = await query.CountAsync();
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            ViewBag.CurrentPage = page;
-            ViewBag.Search = search;
-
-            var categories = await query
-                .OrderBy(c => c.CategoryId)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            // AJAX isteğinde yalnızca satır HTML’i dön
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                var html = string.Join("", categories.Select(c => $@"
-                    <tr>
-                        <td>{c.CategoryId}</td>
-                        <td>{c.CategoryName}</td>
-                        <td>{(c.Status ? "<label class='badge badge-success badge-pill'>Aktif</label>"
-                                       : "<label class='badge badge-danger badge-pill'>Pasif</label>")}</td>
-                        <td><a href='/Category/DeleteCategory/{c.CategoryId}' class='btn btn-outline-danger btn-sm'>Sil</a></td>
-                        <td><a href='/Category/UpdateCategory/{c.CategoryId}' class='btn btn-outline-success btn-sm'>Güncelle</a></td>
-                    </tr>
-                "));
-                return Content(html, "text/html");
-            }
-
-            return View(categories);
+            var model = await _categories.GetPagedAsync(search, page, ct);
+            return IsAjaxRequest ? PartialView("_CategoryRows", model) : View(model);
         }
 
         [HttpGet]
-        public IActionResult CreateCategory() => View();
+        public IActionResult CreateCategory() => View("CategoryForm", new FormPage<CategoryInput>(new CategoryInput()));
 
         [HttpPost]
-        public IActionResult CreateCategory(Category category)
+        public async Task<IActionResult> CreateCategory([Bind(Prefix = "Input")] CategoryInput input, CancellationToken ct)
         {
-            category.Status = true;
-            _context.Categories.Add(category);
-            _context.SaveChanges();
-            return RedirectToAction("CategoryList");
-        }
+            if (!ModelState.IsValid) return View("CategoryForm", new FormPage<CategoryInput>(input));
 
-        public IActionResult DeleteCategory(int id)
-        {
-            var category = _context.Categories.Find(id);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                _context.SaveChanges();
-            }
-            return RedirectToAction("CategoryList");
+            await _categories.CreateAsync(input.Name, ct);
+            FlashSuccess($"\"{input.Name}\" kategorisi eklendi.");
+            return RedirectToAction(nameof(CategoryList));
         }
 
         [HttpGet]
-        public IActionResult UpdateCategory(int id)
+        public async Task<IActionResult> UpdateCategory(int id, CancellationToken ct)
         {
-            var category = _context.Categories.Find(id);
-            if (category == null) return NotFound();
-            return View(category);
+            var category = await _categories.GetAsync(id, ct);
+            if (category is null) return NotFound();
+
+            return View("CategoryForm", new FormPage<CategoryInput>(new CategoryInput { Name = category.CategoryName, Status = category.Status }, id));
         }
 
         [HttpPost]
-        public IActionResult UpdateCategory(Category category)
+        public async Task<IActionResult> UpdateCategory(int id, [Bind(Prefix = "Input")] CategoryInput input, CancellationToken ct)
         {
-            var existing = _context.Categories.Find(category.CategoryId);
-            if (existing == null) return NotFound();
+            if (!ModelState.IsValid) return View("CategoryForm", new FormPage<CategoryInput>(input, id));
 
-            existing.CategoryName = category.CategoryName;
-            existing.Status = category.Status;
-            _context.SaveChanges();
-            return RedirectToAction("CategoryList");
+            var result = await _categories.UpdateAsync(id, input.Name, input.Status, ct);
+            if (result.IsNotFound) return NotFound();
+
+            Flash(result, "Kategori güncellendi.");
+            return RedirectToAction(nameof(CategoryList));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCategory(int id, CancellationToken ct)
+        {
+            Flash(await _categories.DeleteAsync(id, ct), "Kategori silindi.");
+            return RedirectToAction(nameof(CategoryList));
         }
     }
 }

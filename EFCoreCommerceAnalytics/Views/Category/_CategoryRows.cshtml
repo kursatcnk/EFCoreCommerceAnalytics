@@ -1,0 +1,24 @@
+@model PagedList<Category>
+@* Tablo satırları. Hem sayfa ilk açıldığında hem de AJAX aramasında kullanılıyor; Razor bütün değerleri HTML-encode ediyor.
+   (Eskiden AJAX cevabı C# tarafında string birleştirilerek üretiliyordu ve kategori adı encode edilmiyordu.) *@
+@if (Model.Items.Count == 0)
+{
+    <tr><td colspan="4" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+}
+@foreach (var item in Model.Items)
+{
+    <tr>
+        <td class="text-muted">@item.CategoryId</td>
+        <td class="font-weight-bold">@item.CategoryName</td>
+        <td>
+            <span class="badge badge-pill @(item.Status ? "badge-success" : "badge-danger")">@(item.Status ? "Aktif" : "Pasif")</span>
+        </td>
+        <td class="text-right text-nowrap">
+            <a asp-action="UpdateCategory" asp-route-id="@item.CategoryId" class="btn btn-outline-success btn-sm">Düzenle</a>
+            <form asp-action="DeleteCategory" asp-route-id="@item.CategoryId" method="post" class="d-inline"
+                  data-confirm="&quot;@item.CategoryName&quot; kategorisi silinsin mi?">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Sil</button>
+            </form>
+        </td>
+    </tr>
+}

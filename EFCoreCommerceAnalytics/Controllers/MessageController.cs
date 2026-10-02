@@ -1,37 +1,29 @@
-﻿using EFCoreCommerceAnalytics.Context;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
-    public class MessageController : Controller
+    public class MessageController : AppController
     {
-        private readonly AppDbContext _context;
-        public MessageController(AppDbContext context)
+        private readonly IInboxService _inbox;
+
+        public MessageController(IInboxService inbox) => _inbox = inbox;
+
+        public async Task<IActionResult> MessageList(int page = 1, CancellationToken ct = default) =>
+            View(await _inbox.GetMessagesAsync(page, ct));
+
+        /// <summary>Listedeki "Mesaj Detayı" butonu var olmayan bir sayfaya gidiyordu. Mesajı açınca okundu sayılıyor.</summary>
+        public async Task<IActionResult> Detail(int id, CancellationToken ct)
         {
-            _context = context;
+            var message = await _inbox.OpenMessageAsync(id, ct);
+            return message is null ? NotFound() : View(message);
         }
 
-        // Mesajları sayfalı (pagination) listeler
-        public async Task<IActionResult> MessageList(int page = 1)
+        [HttpPost]
+        public async Task<IActionResult> MarkNotificationsRead(string? returnUrl, CancellationToken ct)
         {
-            const int pageSize = 10; // her sayfada 10 kayıt
-
-            var query = _context.Messages
-                                .OrderByDescending(m => m.DateTime)
-                                .AsQueryable();
-
-            int totalCount = await query.CountAsync();
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-            ViewBag.CurrentPage = page;
-
-            var messages = await query
-                                .Skip((page - 1) * pageSize)
-                                .Take(pageSize).AsNoTracking()
-                                .ToListAsync();
-
-            return View(messages);
+            await _inbox.MarkNotificationsReadAsync(ct);
+            return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl) : RedirectToAction("Index", "Dashboard");
         }
-        
     }
 }

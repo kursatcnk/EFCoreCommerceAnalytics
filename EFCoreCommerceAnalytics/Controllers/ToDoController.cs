@@ -1,183 +1,76 @@
-﻿using EFCoreCommerceAnalytics.Context;
 using EFCoreCommerceAnalytics.Entities;
+using EFCoreCommerceAnalytics.Models;
+using EFCoreCommerceAnalytics.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
     /// <summary>
-    ///  ToDo işlemlerini yöneten MVC Controller.
-    ///  EF Core ile veritabanına asenkron CRUD ve Aggregate örnekleri içerir.
+    /// Görevler. Liste sayfaları LINQ operatörlerini göstermek için var: Aggregate, Chunk, Concat, Union.
+    /// Eski adresler yeni action'lara yönlendiriliyor.
     /// </summary>
-    public class ToDoController : Controller
+    public class ToDoController : AppController
     {
-        private readonly AppDbContext _context;
+        private readonly IToDoService _todos;
 
-        public ToDoController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public ToDoController(IToDoService todos) => _todos = todos;
 
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Create() => View(new ToDoInput());
+
+        [HttpPost]
+        public async Task<IActionResult> Create(ToDoInput input, CancellationToken ct)
         {
-            return View();
-        }
-
-        /// <summary>
-        ///  Örnek görevleri veritabanına ekler (Range) ve rastgele içerik üretir.
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> CreateToDo()
-        {
-            string[] descriptions = new string[]
+            if (!ToDoPriorities.All.Contains(input.Priority))
             {
-                "Raporu oku ve özetle",
-                "E-postaları kontrol et",
-                "Sunum hazırla",
-                "Toplantı notlarını gözden geçir",
-                "Kod incelemesi yap",
-                "Yeni özellik ekle",
-                "Hata düzeltmelerini uygula",
-                "Dokümantasyonu güncelle",
-                "Müşteri geri bildirimlerini incele",
-                "Takvim güncellemelerini yap"
-            };
-
-            string[] priorities = new string[]
-            {
-                "Birincil",
-                "İkincil",
-                "Üçüncül",
-                "Dördüncül",
-                "Beşincil"
-            };
-
-            var random = new Random();
-            var todos = new List<ToDo>();
-
-            int taskCount = random.Next(5, 11);
-            for (int i = 0; i < taskCount; i++)
-            {
-                var todo = new ToDo
-                {
-                    ToDoDescription = descriptions[random.Next(descriptions.Length)],
-                    ToDoStatus = random.Next(2) == 0 ? false : true,
-                    Priority = priorities[random.Next(priorities.Length)]
-                };
-                todos.Add(todo);
+                ModelState.AddModelError(nameof(input.Priority), "Geçersiz öncelik.");
             }
 
-            await _context.ToDos.AddRangeAsync(todos);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid) return View(input);
 
-            ViewBag.Message = $"{taskCount} adet rastgele görev başarıyla eklendi.";
-
-            return View();
+            await _todos.CreateAsync(input.Description, input.Done, input.Priority, ct);
+            FlashSuccess("Görev eklendi.");
+            return RedirectToAction(nameof(Create));
         }
 
         /// <summary>
-        ///  Tek bir görev eklemek için GET formu gösterir.
-        /// </summary>
-        [HttpGet]
-        public IActionResult CreateSingleTodo()
-        {
-            return View();
-        }
-
-        /// <summary>
-        ///  Tek bir görevi veritabanına ekler (POST).
+        /// Rastgele örnek görev ekler. Eskiden bu bir GET adresiydi; menüdeki "Yeni Görev Ekle" linkine her tıklayışta
+        /// ve hatta tarayıcı sayfayı önceden yüklediğinde veritabanına görev ekleniyordu. Artık yalnızca form ile POST.
         /// </summary>
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateSingleTodo(ToDo model)
+        public async Task<IActionResult> AddSamples(CancellationToken ct)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            await _context.ToDos.AddAsync(model);
-            await _context.SaveChangesAsync();
-
-            ViewBag.Message = "Görev başarıyla eklendi.";
-
-            return View();
+            var count = await _todos.AddRandomSamplesAsync(ct);
+            FlashSuccess($"{count} örnek görev eklendi.");
+            return RedirectToAction(nameof(Create));
         }
 
-        /// <summary>
-        ///  "Birincil" önceliğe sahip görevleri toplar ve ekrana gösterir (düz liste).
-        ///  Chunk kullanımı view’da yapılacak şekilde.
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> ShowPrimaryTodosInChunks()
+        /// <summary>Aggregate: birincil görevlerin açıklamalarını tek metinde birleştirir.</summary>
+        public async Task<IActionResult> PrimaryAggregate(CancellationToken ct)
         {
-            var birincilTodos = await _context.ToDos
-                .Where(t => t.Priority == ToDoPriorities.First)
-                .ToListAsync();
-
-            // View'a düz liste gönderiyoruz, view chunk mantığını uygular
-            return View(birincilTodos);
+            var (items, joined) = await _todos.GetFirstPriorityWithAggregateAsync(ct);
+            ViewData["Joined"] = joined;
+            return View(items);
         }
 
-        /// <summary>
-        ///  "Birincil" önceliğe sahip görevleri toplar ve Aggregate ile gösterir.
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> ShowPriortyNumberOne()
-        {
-            var birincilTodos = await _context.ToDos
-                .Where(t => t.Priority == ToDoPriorities.First)
-                .ToListAsync();
+        /// <summary>Chunk: birincil görevleri üçerli gruplar hâlinde gösterir.</summary>
+        public async Task<IActionResult> PrimaryChunks(CancellationToken ct) =>
+            View(await _todos.GetFirstPriorityInChunksAsync(3, ct));
 
-            var aggregatedDescriptions = birincilTodos.Any()
-                ? birincilTodos.Select(t => t.ToDoDescription)
-                               .Aggregate((current, next) => current + " | " + next)
-                : "Birincil görev bulunamadı.";
+        /// <summary>Concat: birincil ve ikincil görevler art arda.</summary>
+        public async Task<IActionResult> PrimaryAndSecondary(CancellationToken ct) =>
+            View("ToDoTable", new ToDoTablePage("Birincil + ikincil görevler (Concat)", await _todos.GetFirstAndSecondConcatAsync(ct)));
 
-            ViewBag.BirincilCount = birincilTodos.Count;
-            ViewBag.AggregatedDescriptions = aggregatedDescriptions;
+        /// <summary>Union: dördüncül ve beşincil görevler tekrarsız.</summary>
+        public async Task<IActionResult> FourthAndFifth(CancellationToken ct) =>
+            View("ToDoTable", new ToDoTablePage("Dördüncül + beşincil görevler (Union)", await _todos.GetFourthAndFifthUnionAsync(ct)));
 
-            return View(birincilTodos);
-        }
-        [HttpGet]
-        public async Task<IActionResult> ShowFourthAndFifthUnion()
-        {
-            // Dördüncül görevler
-            var fourthTodos = await _context.ToDos
-                .Where(t => t.Priority == ToDoPriorities.Fourth)
-                .ToListAsync();
-
-            // Beşincil görevler
-            var fifthTodos = await _context.ToDos
-                .Where(t => t.Priority == ToDoPriorities.Fifth)
-                .ToListAsync();
-
-            // Union ile birleştiriyoruz
-            var combinedTodos = fourthTodos.Union(fifthTodos).ToList();
-
-            ViewBag.TotalCount = combinedTodos.Count;
-
-            return View(combinedTodos);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ShowPrimaryAndSecondaryTodos()
-        {
-            var primaryTodos = await _context.ToDos
-                .Where(t => t.Priority == ToDoPriorities.First)
-                .ToListAsync();
-
-            var secondaryTodos = await _context.ToDos
-                .Where(t => t.Priority == ToDoPriorities.Second)
-                .ToListAsync();
-
-            // Concat ile birleştiriyoruz
-            var combinedTodos = primaryTodos.Concat(secondaryTodos).ToList();
-
-            ViewBag.TotalCount = combinedTodos.Count;
-            return View(combinedTodos);
-        }
-
+        // Eski adresler
+        [HttpGet] public IActionResult CreateSingleTodo() => RedirectToActionPermanent(nameof(Create));
+        [HttpGet] public IActionResult CreateToDo() => RedirectToActionPermanent(nameof(Create));
+        [HttpGet] public IActionResult ShowPriortyNumberOne() => RedirectToActionPermanent(nameof(PrimaryAggregate));
+        [HttpGet] public IActionResult ShowPrimaryTodosInChunks() => RedirectToActionPermanent(nameof(PrimaryChunks));
+        [HttpGet] public IActionResult ShowPrimaryAndSecondaryTodos() => RedirectToActionPermanent(nameof(PrimaryAndSecondary));
+        [HttpGet] public IActionResult ShowFourthAndFifthUnion() => RedirectToActionPermanent(nameof(FourthAndFifth));
     }
 }

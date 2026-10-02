@@ -19,6 +19,7 @@
             <div class="main-panel">
                 <div class="content-wrapper">
 
+                    <partial name="_Alerts" />
                     @RenderBody()
                 </div>
                 @await Component.InvokeAsync("_LayoutFooterComponentPartial")
@@ -27,6 +28,7 @@
     </div>
 
     @await Component.InvokeAsync("_LayoutScriptsComponentPartial")
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 

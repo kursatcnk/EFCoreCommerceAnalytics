@@ -1,0 +1,32 @@
+@using EFCoreCommerceAnalytics.Helpers
+@model PagedList<Order>
+@{
+    var showActions = ViewData["ShowActions"] as bool? ?? false;
+}
+@if (Model.Items.Count == 0)
+{
+    <tr><td colspan="@(showActions ? 9 : 8)" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+}
+@foreach (var item in Model.Items)
+{
+    <tr>
+        <td class="text-muted">@item.OrderId</td>
+        <td>@item.Product?.ProductName</td>
+        <td>@item.Customer?.FullName</td>
+        <td class="text-right">@item.OrderCount</td>
+        <td class="text-right text-nowrap">@item.UnitPrice.ToString("C")</td>
+        <td class="text-right text-nowrap font-weight-bold">@item.TotalPrice.ToString("C")</td>
+        <td class="text-nowrap">@item.OrderDate.ToString("dd.MM.yyyy")</td>
+        <td><label class="@StatusColorHelper.GetBadgeClass(item.SaleStatus)">@item.SaleStatus</label></td>
+        @if (showActions)
+        {
+            <td class="text-right text-nowrap">
+                <a asp-action="UpdateOrder" asp-route-id="@item.OrderId" class="btn btn-outline-success btn-sm">Düzenle</a>
+                <form asp-action="CancelOrder" asp-route-id="@item.OrderId" method="post" class="d-inline"
+                      data-confirm="#@item.OrderId numaralı sipariş iptal edilsin mi?">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">İptal et</button>
+                </form>
+            </td>
+        }
+    </tr>
+}

@@ -1,0 +1,22 @@
+@model Message
+@{
+    ViewData["Title"] = Model.Title;
+}
+<div class="row">
+    <div class="col-lg-8 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <partial name="_Avatar" model="@(new AvatarModel(Model.SenderNameSurname, Model.SenderImageUrl))" />
+                    <div class="ml-3">
+                        <div class="font-weight-bold">@Model.SenderNameSurname</div>
+                        <div class="text-muted small">@Model.DateTime.ToString("dd MMMM yyyy, HH:mm")</div>
+                    </div>
+                </div>
+                <h4 class="card-title">@Model.Title</h4>
+                <p class="message-body">@Model.Content</p>
+                <a asp-action="MessageList" class="btn btn-light mt-2">Mesajlara dön</a>
+            </div>
+        </div>
+    </div>
+</div>

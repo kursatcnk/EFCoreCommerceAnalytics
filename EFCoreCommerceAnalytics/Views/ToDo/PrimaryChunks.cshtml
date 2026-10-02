@@ -1,0 +1,33 @@
+@model IReadOnlyList<ToDo[]>
+@{
+    ViewData["Title"] = "Birincil görevler (Chunk)";
+}
+<div class="page-header">
+    <h3 class="page-title">Birincil görevler, üçerli gruplar hâlinde</h3>
+</div>
+@* Eski sayfa "chunk" adını taşıyordu ama listeyi hiç bölmüyordu; gruplar artık serviste Chunk(3) ile oluşuyor. *@
+@if (Model.Count == 0)
+{
+    <p class="text-muted">Birincil görev yok.</p>
+}
+<div class="row">
+    @for (var i = 0; i < Model.Count; i++)
+    {
+        <div class="col-md-6 col-xl-4 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Grup @(i + 1)</h4>
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var item in Model[i])
+                        {
+                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <span>@item.ToDoDescription</span>
+                                <partial name="_ToDoStatus" model="item.ToDoStatus" />
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+</div>

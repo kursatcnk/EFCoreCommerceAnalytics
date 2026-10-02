@@ -1,38 +1,41 @@
-﻿@model IEnumerable<dynamic>
+@model IReadOnlyList<CityCustomerCount>
 @{
-    ViewData["Title"] = "Şehirlere Göre Müşteri Sayısı";
-    Layout = "~/Views/_Layout/Index.cshtml";
+    ViewData["Title"] = "Şehirlere göre müşteriler";
+    var total = Model.Sum(x => x.CustomerCount);
 }
-
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Şehirlere Göre Müşteri Sayısı</h4>
-                <p class="card-description">
-                    <code>Her şehirdeki toplam müşteri sayısı listelenmiştir.</code>
-                </p>
-
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Şehir</th>
-                                <th>Müşteri Sayısı</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>@item.City</td>
-                                    <td>@item.CustomerCount</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title mb-1">Şehirlere göre müşteri sayısı</h4>
+        <p class="text-muted small">@Model.Count şehirde toplam @total müşteri.</p>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Şehir</th>
+                        <th class="text-right">Müşteri</th>
+                        <th style="width:40%">Pay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-center text-muted py-4">Henüz müşteri yok.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        var share = total == 0 ? 0 : item.CustomerCount * 100.0 / total;
+                        <tr>
+                            <td>@item.City</td>
+                            <td class="text-right">@item.CustomerCount</td>
+                            <td>
+                                <div class="progress" style="height:8px" title="%@share.ToString("0.0")">
+                                    <div class="progress-bar bg-primary" style="width:@share.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

@@ -1,0 +1,51 @@
+@model ToDoInput
+@{
+    ViewData["Title"] = "Görev ekle";
+}
+<div class="row">
+    <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Yeni görev</h4>
+                <form asp-action="Create" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                    <div class="form-group">
+                        <label asp-for="Description"></label>
+                        <input asp-for="Description" class="form-control" placeholder="Ör. Stok sayımını tamamla" autofocus />
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-sm-6">
+                            <label asp-for="Priority"></label>
+                            <select asp-for="Priority" class="form-control" asp-items="@(new SelectList(ToDoPriorities.All))"></select>
+                            <span asp-validation-for="Priority" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-sm-6 d-flex align-items-end">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input asp-for="Done" class="form-check-input" /> Tamamlandı olarak ekle
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Görevi ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Örnek veri</h4>
+                <p class="text-muted">Raporları denemek için 5-10 arası rastgele görev ekler (AddRange örneği).</p>
+                <form asp-action="AddSamples" method="post" data-confirm="Rastgele örnek görevler eklensin mi?">
+                    <button type="submit" class="btn btn-outline-primary">Örnek görev ekle</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

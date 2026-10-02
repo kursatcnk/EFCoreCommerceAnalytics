@@ -1,0 +1,33 @@
+@model EFCoreCommerceAnalytics.Models.PagerModel
+@* Sayfalama. Çok sayfa olduğunda bütün numaraları yazmak yerine mevcut sayfanın çevresini gösteriyor; arama metni korunuyor. *@
+@if (Model.TotalPages > 1)
+{
+    var from = Math.Max(1, Model.Page - 2);
+    var to = Math.Min(Model.TotalPages, Model.Page + 2);
+    <nav aria-label="Sayfalama" data-pager>
+        <ul class="pagination mb-0">
+            <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="@Model.Action" asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search" aria-label="Önceki">&lsaquo;</a>
+            </li>
+            @if (from > 1)
+            {
+                <li class="page-item"><a class="page-link" asp-action="@Model.Action" asp-route-page="1" asp-route-search="@Model.Search">1</a></li>
+                @if (from > 2) { <li class="page-item disabled"><span class="page-link">…</span></li> }
+            }
+            @for (var i = from; i <= to; i++)
+            {
+                <li class="page-item @(i == Model.Page ? "active" : "")">
+                    <a class="page-link" asp-action="@Model.Action" asp-route-page="@i" asp-route-search="@Model.Search" aria-current="@(i == Model.Page ? "page" : null)">@i</a>
+                </li>
+            }
+            @if (to < Model.TotalPages)
+            {
+                @if (to < Model.TotalPages - 1) { <li class="page-item disabled"><span class="page-link">…</span></li> }
+                <li class="page-item"><a class="page-link" asp-action="@Model.Action" asp-route-page="@Model.TotalPages" asp-route-search="@Model.Search">@Model.TotalPages</a></li>
+            }
+            <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="@Model.Action" asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search" aria-label="Sonraki">&rsaquo;</a>
+            </li>
+        </ul>
+    </nav>
+}

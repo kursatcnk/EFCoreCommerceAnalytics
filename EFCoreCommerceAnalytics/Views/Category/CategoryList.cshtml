@@ -1,230 +1,38 @@
-﻿@model List<EFCoreCommerceAnalytics.Entities.Category>
+@model PagedList<Category>
 @{
-    ViewData["Title"] = "CategoryList";
-    Layout = "~/Views/_Layout/Index.cshtml";
-
-    int currentPage = ViewBag.CurrentPage ?? 1;
-    int totalPages  = ViewBag.TotalPages ?? 1;
+    ViewData["Title"] = "Kategoriler";
 }
-
-<!--
-  Modern Category List View
-  - "İşlemler" altında sil/güncelle dropdown'ı
-  - Minimal, soft-shadow kart görünümü
-  - AJAX arama mevcut (Customer'daki ile aynı mantık)
--->
-
-<style>
-    /* Card / table modernizasyonu */
-    .card.modern {
-        border: 0;
-        border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(18, 38, 63, 0.08);
-        overflow: hidden;
-    }
-
-    .table-modern thead th {
-        border-bottom: 0;
-        font-weight: 600;
-        color: #374151; /* slate-700 */
-        background: transparent;
-    }
-
-    .table-modern tbody tr {
-        transition: background .15s, transform .08s;
-    }
-
-    .table-modern tbody tr:hover {
-        background: rgba(15, 23, 42, 0.03);
-        transform: translateY(-1px);
-    }
-
-    .badge-pill {
-        border-radius: 999px;
-        padding: .35rem .6rem;
-        font-size: .75rem;
-    }
-
-    /* İşlemler dropdown buton stili */
-    .action-ellipsis {
-        background: transparent;
-        border: none;
-        color: #374151;
-        padding: .35rem .5rem;
-        font-size: 1.05rem;
-    }
-
-    .action-ellipsis:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59,130,246,.12);
-        border-radius: 6px;
-    }
-
-    /* Responsive: küçük ekranlarda butonları daha geniş göster */
-    @@media (max-width: 576px) {
-        .table-modern thead { display: none; }
-        .table-modern tbody td {
-            display: block;
-            width: 100%;
-        }
-        .table-modern tbody tr {
-            display: block;
-            margin-bottom: 16px;
-            background: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(2,6,23,0.04);
-        }
-        .action-ellipsis {
-            float: right;
-        }
-    }
-
-    /* Arama kutusu daha belirgin */
-    #searchInput {
-        border-radius: 10px;
-        box-shadow: 0 1px 4px rgba(2,6,23,0.04);
-        padding-left: 14px;
-    }
-
-    /* Pagination modern görünüm */
-    .pagination .page-item .page-link {
-        border-radius: 8px;
-        margin: 0 4px;
-        padding: 6px 10px;
-    }
-    .pagination .page-item.active .page-link {
-        background: linear-gradient(90deg,#4f46e5,#06b6d4);
-        border: none;
-        color: white;
-        box-shadow: 0 6px 18px rgba(79,70,229,0.12);
-    }
-</style>
-
-<div class="row">
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card modern">
-            <div class="card-body">
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                    <div>
-                        <h4 class="card-title mb-1">Kategoriler</h4>
-                        <p class="text-muted mb-0 small">Kategorilerle ilgili işlemleri buradan yönetebilirsiniz.</p>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <a href="/Category/CreateCategory" class="btn btn-sm btn-primary shadow-sm">
-                            <i class="fas fa-plus me-1"></i> Yeni
-                        </a>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Kategori adı ile ara..." />
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-modern align-middle">
-                        <thead>
-                            <tr>
-                                <th style="width:80px">ID</th>
-                                <th>Adı</th>
-                                <th style="width:130px">Durumu</th>
-                                <th style="width:110px">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="categoryTableBody">
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td class="fw-medium text-muted">@item.CategoryId</td>
-                                    <td class="fw-semibold">@item.CategoryName</td>
-                                    <td>
-                                        @if (item.Status)
-                                        {
-                                            <span class="badge bg-success text-white badge-pill">Aktif</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger text-white badge-pill">Pasif</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <!-- İşlemler: ellipsis dropdown -->
-                                        <div class="dropdown">
-                                            <button class="action-ellipsis" type="button" id="actionsDropdown@item.CategoryId" data-bs-toggle="dropdown" aria-expanded="false" title="İşlemler">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown@item.CategoryId">
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center" href="/Category/UpdateCategory/@item.CategoryId">
-                                                        <i class="fas fa-edit me-2 text-primary"></i> Güncelle
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center text-danger" href="/Category/DeleteCategory/@item.CategoryId" onclick="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
-                                                        <i class="fas fa-trash-alt me-2 text-danger"></i> Sil
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <div class="text-muted small">Toplam Sayfa: @totalPages</div>
-
-                    <nav aria-label="Sayfalama">
-                        <ul class="pagination mb-0">
-                            @for (int i = 1; i <= totalPages; i++)
-                            {
-                                <li class="page-item @(i == currentPage ? "active" : "")">
-                                    <a class="page-link" href="@Url.Action("CategoryList", new { page = i })">@i</a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
-                </div>
-
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+            <div>
+                <h4 class="card-title mb-1">Kategoriler</h4>
+                <p class="text-muted small mb-0">@Model.TotalCount kategori</p>
             </div>
+            <a asp-action="CreateCategory" class="btn btn-sm btn-primary"><i class="fas fa-plus mr-1"></i> Yeni kategori</a>
+        </div>
+
+        <input type="search" class="form-control mb-3" placeholder="Kategori adı ile ara…" aria-label="Kategori ara"
+               value="@Model.Search" data-list-search="@Url.Action("CategoryList")" data-target="#categoryRows" />
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:80px">#</th>
+                        <th>Ad</th>
+                        <th style="width:130px">Durum</th>
+                        <th style="width:180px" class="text-right">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryRows">
+                    <partial name="_CategoryRows" model="Model" />
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+            <partial name="_Pagination" model='PagerModel.For(Model, "CategoryList")' />
         </div>
     </div>
 </div>
-
-<!-- jQuery (AJAX search) - mevcut Customer örneğiyle birebir uyumlu -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(function () {
-        let typingTimer;
-        const doneTypingInterval = 300;
-
-        $('#searchInput').on('keyup', function () {
-            clearTimeout(typingTimer);
-            const query = $(this).val();
-
-            typingTimer = setTimeout(function () {
-                $.ajax({
-                    url: '/Category/CategoryList',
-                    type: 'GET',
-                    data: { search: query },
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    success: function (result) {
-                        $('#categoryTableBody').html(result);
-
-                        // sayfalama göster/gizle (aynı mantıkla)
-                        if (query.length > 0) {
-                            $('.pagination').hide();
-                        } else {
-                            $('.pagination').show();
-                        }
-                    },
-                    error: function (xhr, status, err) {
-                        console.error('Kategori arama hatası:', err);
-                    }
-                });
-            }, doneTypingInterval);
-        });
-    });
-</script>

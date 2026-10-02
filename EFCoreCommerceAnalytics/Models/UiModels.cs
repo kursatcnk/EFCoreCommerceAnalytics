@@ -1,4 +1,5 @@
 using System.Globalization;
+using EFCoreCommerceAnalytics.Entities;
 
 namespace EFCoreCommerceAnalytics.Models
 {
@@ -12,4 +13,13 @@ namespace EFCoreCommerceAnalytics.Models
 
     /// <summary>İstatistik sayfasındaki tek bir kart.</summary>
     public sealed record StatCardModel(string Title, string Value, string Note, string Icon);
+
+    /// <summary>Sayfalama bileşeni: hangi action'a gidileceği ve (varsa) arama metni.</summary>
+    public sealed record PagerModel(int Page, int TotalPages, string Action, string? Search = null)
+    {
+        public static PagerModel For<T>(PagedList<T> list, string action) => new(list.Page, list.TotalPages, action, list.Search);
+    }
+
+    /// <summary>Aynı tablo görünümünü kullanan görev sayfaları (Concat ve Union örnekleri).</summary>
+    public sealed record ToDoTablePage(string Title, IReadOnlyList<ToDo> Items);
 }

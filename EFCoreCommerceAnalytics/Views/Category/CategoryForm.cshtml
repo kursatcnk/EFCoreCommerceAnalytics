@@ -1,0 +1,37 @@
+@model FormPage<CategoryInput>
+@{
+    ViewData["Title"] = Model.IsEdit ? "Kategori düzenle" : "Kategori ekle";
+    var action = Model.IsEdit ? "UpdateCategory" : "CreateCategory";
+}
+<div class="row">
+    <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewData["Title"]</h4>
+                <form asp-action="@action" asp-route-id="@Model.Id" method="post" class="forms-sample" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.Name"></label>
+                        <input asp-for="Input.Name" class="form-control" placeholder="Ör. Elektronik" autofocus />
+                        <span asp-validation-for="Input.Name" class="text-danger small"></span>
+                    </div>
+
+                    @if (Model.IsEdit)
+                    {
+                        <div class="form-group">
+                            <label asp-for="Input.Status"></label>
+                            <select asp-for="Input.Status" class="form-control">
+                                <option value="true">Aktif</option>
+                                <option value="false">Pasif</option>
+                            </select>
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-primary mr-2">@(Model.IsEdit ? "Kaydet" : "Ekle")</button>
+                    <a asp-action="CategoryList" class="btn btn-light">Vazgeç</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

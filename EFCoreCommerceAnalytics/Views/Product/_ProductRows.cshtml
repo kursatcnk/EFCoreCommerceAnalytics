@@ -1,0 +1,24 @@
+@model PagedList<Product>
+@if (Model.Items.Count == 0)
+{
+    <tr><td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+}
+@foreach (var item in Model.Items)
+{
+    <tr>
+        <td class="text-muted">@item.ProductId</td>
+        <td class="font-weight-bold">@item.ProductName</td>
+        <td>@(item.Category?.CategoryName ?? "-")</td>
+        <td class="text-right text-nowrap">@item.ProductPrice.ToString("C")</td>
+        <td class="text-right">
+            <span class="@(item.ProductStock < 10 ? "text-danger font-weight-bold" : "")">@item.ProductStock.ToString("N0")</span>
+        </td>
+        <td class="text-right text-nowrap">
+            <a asp-action="UpdateProduct" asp-route-id="@item.ProductId" class="btn btn-outline-success btn-sm">Düzenle</a>
+            <form asp-action="DeleteProduct" asp-route-id="@item.ProductId" method="post" class="d-inline"
+                  data-confirm="&quot;@item.ProductName&quot; silinsin mi?">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Sil</button>
+            </form>
+        </td>
+    </tr>
+}

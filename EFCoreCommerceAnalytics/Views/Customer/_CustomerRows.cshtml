@@ -1,0 +1,22 @@
+@model PagedList<Customer>
+@if (Model.Items.Count == 0)
+{
+    <tr><td colspan="5" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+}
+@foreach (var item in Model.Items)
+{
+    <tr>
+        <td><partial name="_Avatar" model="@(new AvatarModel(item.FullName, item.CustomerImageUrl))" /></td>
+        <td class="font-weight-bold">@item.FullName</td>
+        <td>@item.CustomerCity@(string.IsNullOrWhiteSpace(item.CustomerDistrict) ? "" : " / " + item.CustomerDistrict)</td>
+        <td class="text-right text-nowrap">@item.CustomerBalance.ToString("C")</td>
+        <td class="text-right text-nowrap">
+            <a asp-action="UpdateCustomer" asp-route-id="@item.CustomerId" class="btn btn-outline-success btn-sm">Düzenle</a>
+            <form asp-action="DeleteCustomer" asp-route-id="@item.CustomerId" method="post" class="d-inline"
+                  data-confirm="@item.FullName silinsin mi?">
+                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                <button type="submit" class="btn btn-outline-danger btn-sm">Sil</button>
+            </form>
+        </td>
+    </tr>
+}

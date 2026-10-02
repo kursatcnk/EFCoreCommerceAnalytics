@@ -1,17 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EFCoreCommerceAnalytics.Controllers
 {
-    public class DashboardController : Controller
+    /// <summary>Sayfaların içeriği view component'lerden geliyor; burada sadece sayfa seçiliyor.</summary>
+    public class DashboardController : AppController
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
-        public IActionResult Statistics() 
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
+        public IActionResult Statistics() => View();
     }
 }
