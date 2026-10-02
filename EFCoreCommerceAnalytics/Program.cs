@@ -47,7 +47,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
@@ -59,6 +59,9 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedCultures = new[] { turkish },
     SupportedUICultures = new[] { turkish }
 });
+
+// 404 gibi durumlarda boş sayfa yerine uygulamanın kendi sayfası gösterilsin.
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();

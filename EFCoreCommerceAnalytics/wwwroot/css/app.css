@@ -22,3 +22,30 @@
     font-size: 1.6rem;
     word-break: break-word;
 }
+
+/* Marka: şablonun Melody logosu yerine uygulamanın adı. */
+.app-brand {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #392c70 !important;
+    white-space: nowrap;
+}
+
+.app-brand i {
+    margin-right: 0.35rem;
+}
+
+.sidebar-avatar {
+    width: 44px;
+    height: 44px;
+    background: #392c70;
+}
+
+/* Şablon fontu (PT Sans) ₺ işaretini içermiyor; o karakter için sistem fontuna düşülsün. */
+body, .btn, .form-control, h1, h2, h3, h4, h5, h6 {
+    font-family: "PT Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+.nav-search .input-group {
+    width: 320px;
+}

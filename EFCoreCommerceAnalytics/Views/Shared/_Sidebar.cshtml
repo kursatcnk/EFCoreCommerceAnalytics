@@ -1,0 +1,96 @@
+@{
+    // Menü öğeleri ve aktif sayfa tespiti. Şablondan kalan "UI Elements", "Forms", "Documentation" linkleri
+    // var olmayan HTML sayfalarına gidiyordu; kaldırıldı. Ürünler ve Mesajlar menüde hiç yoktu; eklendi.
+    var controller = ViewContext.RouteData.Values["controller"] as string;
+    var action = ViewContext.RouteData.Values["action"] as string;
+
+    string Active(string c, string? a = null) =>
+        string.Equals(controller, c, StringComparison.OrdinalIgnoreCase) && (a is null || string.Equals(action, a, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+    string Open(string c) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase) ? "show" : "";
+}
+<nav class="sidebar sidebar-offcanvas" id="sidebar" aria-label="Ana menü">
+    <ul class="nav">
+        <li class="nav-item nav-profile">
+            <div class="nav-link">
+                <div class="profile-image">
+                    <span class="avatar-initial rounded-circle sidebar-avatar" aria-hidden="true">KÇ</span>
+                </div>
+                <div class="profile-name">
+                    <p class="name">Kürşatcan Çankaroğlu</p>
+                    <p class="designation">Yönetici</p>
+                </div>
+            </div>
+        </li>
+
+        <li class="nav-item @Active("Dashboard", "Index")">
+            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                <i class="fa fa-home menu-icon"></i><span class="menu-title">Dashboard</span>
+            </a>
+        </li>
+        <li class="nav-item @Active("Dashboard", "Statistics")">
+            <a class="nav-link" asp-controller="Dashboard" asp-action="Statistics">
+                <i class="fa fa-chart-pie menu-icon"></i><span class="menu-title">İstatistikler</span>
+            </a>
+        </li>
+
+        <li class="nav-item @Active("Order")">
+            <a class="nav-link" data-toggle="collapse" href="#ordersMenu" aria-expanded="@(Open("Order") == "show" ? "true" : "false")" aria-controls="ordersMenu">
+                <i class="fa fa-shopping-cart menu-icon"></i><span class="menu-title">Siparişler</span><i class="menu-arrow"></i>
+            </a>
+            <div class="collapse @Open("Order")" id="ordersMenu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"><a class="nav-link @Active("Order", "OrderList")" asp-controller="Order" asp-action="OrderList">Tüm siparişler</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("Order", "ActiveOrders")" asp-controller="Order" asp-action="ActiveOrders">En yeni siparişler</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("Order", "CanceledOrders")" asp-controller="Order" asp-action="CanceledOrders">İptal edilenler</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("Order", "CreateOrder")" asp-controller="Order" asp-action="CreateOrder">Yeni sipariş</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item @Active("Product")">
+            <a class="nav-link" asp-controller="Product" asp-action="ProductList">
+                <i class="fa fa-box menu-icon"></i><span class="menu-title">Ürünler</span>
+            </a>
+        </li>
+        <li class="nav-item @Active("Category")">
+            <a class="nav-link" asp-controller="Category" asp-action="CategoryList">
+                <i class="fa fa-tags menu-icon"></i><span class="menu-title">Kategoriler</span>
+            </a>
+        </li>
+
+        <li class="nav-item @Active("Customer")">
+            <a class="nav-link" data-toggle="collapse" href="#customerMenu" aria-expanded="@(Open("Customer") == "show" ? "true" : "false")" aria-controls="customerMenu">
+                <i class="fa fa-users menu-icon"></i><span class="menu-title">Müşteriler</span><i class="menu-arrow"></i>
+            </a>
+            <div class="collapse @Open("Customer")" id="customerMenu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"><a class="nav-link @Active("Customer", "CustomerList")" asp-controller="Customer" asp-action="CustomerList">Tüm müşteriler</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("Customer", "HighBalanceCustomers")" asp-controller="Customer" asp-action="HighBalanceCustomers">Yüksek bakiyeli</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("Customer", "CustomersByCity")" asp-controller="Customer" asp-action="CustomersByCity">Şehirlere göre</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("Customer", "TopCitiesWithTopCustomers")" asp-controller="Customer" asp-action="TopCitiesWithTopCustomers">En çok sipariş alan şehirler</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item @Active("ToDo")">
+            <a class="nav-link" data-toggle="collapse" href="#todoMenu" aria-expanded="@(Open("ToDo") == "show" ? "true" : "false")" aria-controls="todoMenu">
+                <i class="fa fa-tasks menu-icon"></i><span class="menu-title">Görevler</span><i class="menu-arrow"></i>
+            </a>
+            <div class="collapse @Open("ToDo")" id="todoMenu">
+                <ul class="nav flex-column sub-menu">
+                    <li class="nav-item"><a class="nav-link @Active("ToDo", "Create")" asp-controller="ToDo" asp-action="Create">Görev ekle</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("ToDo", "PrimaryAggregate")" asp-controller="ToDo" asp-action="PrimaryAggregate">Birincil (Aggregate)</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("ToDo", "PrimaryChunks")" asp-controller="ToDo" asp-action="PrimaryChunks">Birincil (Chunk)</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("ToDo", "PrimaryAndSecondary")" asp-controller="ToDo" asp-action="PrimaryAndSecondary">Birincil + ikincil (Concat)</a></li>
+                    <li class="nav-item"><a class="nav-link @Active("ToDo", "FourthAndFifth")" asp-controller="ToDo" asp-action="FourthAndFifth">4. + 5. öncelik (Union)</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item @Active("Message")">
+            <a class="nav-link" asp-controller="Message" asp-action="MessageList">
+                <i class="fa fa-envelope menu-icon"></i><span class="menu-title">Mesajlar</span>
+            </a>
+        </li>
+    </ul>
+</nav>

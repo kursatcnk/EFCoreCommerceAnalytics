@@ -1,0 +1,60 @@
+@{
+    const string Theme = "/Melody-Premium-Bootstrap-Admin-Dashboard-Template";
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>@(ViewData["Title"] is string title ? title + " · " : "")Commerce Analytics</title>
+    <link rel="stylesheet" href="@Theme/vendors/iconfonts/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="@Theme/vendors/css/vendor.bundle.base.css" />
+    <link rel="stylesheet" href="@Theme/css/style.css" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+    <div class="container-scroller">
+        @await Component.InvokeAsync("Navbar")
+
+        <div class="container-fluid page-body-wrapper">
+            <partial name="_ThemeSettings" />
+
+            <div id="right-sidebar" class="settings-panel" aria-label="Son görevler">
+                <i class="settings-close fa fa-times" role="button" aria-label="Kapat"></i>
+                <p class="settings-heading">Son görevler</p>
+                @await Component.InvokeAsync("LatestToDos", new { take = 8, view = "Sidebar" })
+            </div>
+
+            <partial name="_Sidebar" />
+
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <partial name="_Alerts" />
+                    @RenderBody()
+                </div>
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                        <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">
+                            © @DateTime.Now.Year <a href="https://www.youtube.com/SPECTRE1-1" target="_blank" rel="noopener">Kürşatcan Çankaroğlu</a>
+                        </span>
+                        <span class="text-muted d-block mt-1 mt-sm-0 text-center">EF Core ile e-ticaret analitiği</span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    @* Şablonun temel paketi jQuery 3 ve Bootstrap 4.1'i içeriyor. Sayfalar ayrıca CDN'den jQuery ve Bootstrap 5
+       yüklüyordu; iki Bootstrap sürümü çakıştığı için kaldırıldı. *@
+    <script src="@Theme/vendors/js/vendor.bundle.base.js"></script>
+    <script src="@Theme/js/off-canvas.js"></script>
+    <script src="@Theme/js/hoverable-collapse.js"></script>
+    <script src="@Theme/js/misc.js"></script>
+    <script src="@Theme/js/settings.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script src="~/js/charts.js" asp-append-version="true"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

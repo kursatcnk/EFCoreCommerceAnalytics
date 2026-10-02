@@ -1,0 +1,102 @@
+@model EFCoreCommerceAnalytics.ViewComponents.NavbarModel
+<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row default-layout-navbar">
+    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo app-brand" asp-controller="Dashboard" asp-action="Index">
+            <i class="fas fa-chart-line"></i> Commerce Analytics
+        </a>
+        <a class="navbar-brand brand-logo-mini app-brand" asp-controller="Dashboard" asp-action="Index" aria-label="Commerce Analytics">
+            <i class="fas fa-chart-line"></i>
+        </a>
+    </div>
+    <div class="navbar-menu-wrapper d-flex align-items-stretch">
+        <button class="navbar-toggler align-self-center" type="button" data-toggle="minimize" aria-label="Menüyü daralt">
+            <span class="fas fa-bars"></span>
+        </button>
+
+        @* Şablondaki arama kutusu hiçbir yere bağlı değildi; artık siparişlerde arıyor. *@
+        <form class="nav-search d-none d-md-flex align-self-center" asp-controller="Order" asp-action="OrderList" method="get" role="search">
+            <div class="input-group">
+                <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
+                <input type="search" name="search" class="form-control" placeholder="Siparişlerde ara" aria-label="Siparişlerde ara" />
+            </div>
+        </form>
+
+        <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item d-none d-lg-flex">
+                <a class="nav-link" asp-controller="Order" asp-action="CreateOrder"><span class="btn btn-primary">+ Yeni sipariş</span></a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown" aria-label="Bildirimler">
+                    <i class="fas fa-bell mx-0"></i>
+                    @if (Model.UnreadNotificationCount > 0)
+                    {
+                        <span class="count">@Model.UnreadNotificationCount</span>
+                    }
+                </a>
+                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
+                    <div class="dropdown-item d-flex justify-content-between align-items-center">
+                        <span class="font-weight-normal">@(Model.UnreadNotificationCount > 0 ? $"{Model.UnreadNotificationCount} okunmamış bildirim" : "Yeni bildirim yok")</span>
+                        @if (Model.UnreadNotificationCount > 0)
+                        {
+                            <form asp-controller="Message" asp-action="MarkNotificationsRead" method="post" class="ml-3">
+                                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                                <button type="submit" class="btn btn-link btn-sm p-0">Hepsini okundu yap</button>
+                            </form>
+                        }
+                    </div>
+                    @foreach (var n in Model.Notifications)
+                    {
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item preview-item" asp-controller="Order" asp-action="UpdateOrder" asp-route-id="@n.ReferenceId">
+                            <div class="preview-thumbnail">
+                                <div class="preview-icon @(n.IsRead ? "bg-secondary" : "bg-success")"><i class="fas fa-shopping-cart mx-0"></i></div>
+                            </div>
+                            <div class="preview-item-content">
+                                <h6 class="preview-subject font-weight-medium">@n.Title</h6>
+                                <p class="font-weight-light small-text mb-0">@n.Content</p>
+                                <p class="font-weight-light small-text text-muted mb-0">@n.DateTime.ToString("dd.MM HH:mm")</p>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link count-indicator dropdown-toggle" id="messageDropdown" href="#" data-toggle="dropdown" aria-label="Mesajlar">
+                    <i class="fas fa-envelope mx-0"></i>
+                    @if (Model.UnreadMessageCount > 0)
+                    {
+                        <span class="count">@Model.UnreadMessageCount</span>
+                    }
+                </a>
+                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="messageDropdown">
+                    <a class="dropdown-item d-flex justify-content-between" asp-controller="Message" asp-action="MessageList">
+                        <span>@(Model.UnreadMessageCount > 0 ? $"{Model.UnreadMessageCount} okunmamış mesaj" : "Okunmamış mesaj yok")</span>
+                        <span class="badge badge-info badge-pill ml-3">Tümü</span>
+                    </a>
+                    @foreach (var m in Model.Messages)
+                    {
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item preview-item" asp-controller="Message" asp-action="Detail" asp-route-id="@m.MessageId">
+                            <div class="preview-thumbnail">
+                                <partial name="_Avatar" model="@(new AvatarModel(m.SenderNameSurname, m.SenderImageUrl))" />
+                            </div>
+                            <div class="preview-item-content flex-grow">
+                                <h6 class="preview-subject ellipsis @(m.IsRead ? "font-weight-medium" : "font-weight-bold")">@m.SenderNameSurname</h6>
+                                <p class="font-weight-light small-text mb-0">@m.Title</p>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </li>
+
+            <li class="nav-item nav-settings d-none d-lg-block">
+                <a class="nav-link" href="#" aria-label="Görevler panelini aç"><i class="fas fa-tasks"></i></a>
+            </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas" aria-label="Menüyü aç">
+            <span class="fas fa-bars"></span>
+        </button>
+    </div>
+</nav>
