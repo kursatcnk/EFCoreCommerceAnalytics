@@ -49,3 +49,9 @@ body, .btn, .form-control, h1, h2, h3, h4, h5, h6 {
 .nav-search .input-group {
     width: 320px;
 }
+
+.navbar .navbar-brand-wrapper .navbar-brand.app-brand {
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    padding-left: 0.5rem;
+}
