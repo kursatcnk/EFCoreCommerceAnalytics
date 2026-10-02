@@ -72,3 +72,9 @@ EFCoreCommerceAnalytics.Tests/   xUnit testleri
 - Para ve tarih biçimleri tr-TR'dir (₺1.234,50). Number input'lardan gelen noktalı değerler de doğru okunur.
 - Kategori, ürün ya da müşteri silinince siparişler kaskad silinmez (`DeleteBehavior.Restrict`).
 - Arayüz satın alınmış bir Bootstrap 4 admin temasını kullanır; `wwwroot/theme` altında yalnızca kullanılan dosyalar bulunur.
+
+## Lisans
+
+Bu depodaki kendi yazdığım kod (C#, Razor view'ları, `wwwroot/css/app.css`, `wwwroot/js`, testler) [MIT](LICENSE) lisanslıdır.
+
+`EFCoreCommerceAnalytics/wwwroot/theme` klasörü bu kapsamın dışındadır. İçindeki dosyalar üçüncü taraflara ait ve kendi lisanslarına tabidir; ayrıntılar [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) dosyasında.
