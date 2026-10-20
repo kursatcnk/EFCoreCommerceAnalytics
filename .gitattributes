@@ -61,3 +61,6 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Hazır tema ve kütüphaneler dil istatistiğine sayılmasın
+EFCoreCommerceAnalytics/wwwroot/theme/** linguist-vendored
